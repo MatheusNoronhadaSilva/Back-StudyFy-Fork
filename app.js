@@ -388,12 +388,17 @@ app.put('/v1/studyfy/mentorias/:id', cors(), bodyParserJSON, async function(requ
 });
 
 
-app.get('/v1/studyfy/gruposMentoria', cors(), async function(request, response) {
+app.post('/v1/studyfy/gruposMentoria', cors(), bodyParserJSON, async function(request, response) {
     try {
 
         console.log('yyyy');
-        
-        const resultadoGrupos = await controllerGrupoMentoria.getInformacoesTodosGruposMentoria();
+        let contentType = request.headers['content-type'];
+
+        let dadosBody = request.body.params.idAluno;
+
+        console.log(dadosBody);
+
+        const resultadoGrupos = await controllerGrupoMentoria.getInformacoesTodosGruposMentoria(dadosBody, contentType);
 
         if (!resultadoGrupos || resultadoGrupos.length === 0) {
             return response.status(404).json({ message: 'Nenhum grupo de mentoria encontrado.' });
@@ -550,6 +555,31 @@ app.post('/v1/studyfy/tipoQuestao', cors(), bodyParserJSON, async function(reque
         response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
     }
 });
+
+app.post('/v1/studyfy/membros/grupo', cors(), bodyParser.json(), async function(request, response) {
+    try {
+
+        console.log('oiiiii');
+        // Recebe o content-type da requisição
+        let contentType = request.headers['content-type'];
+        
+        // Recebe todos os dados encaminhados na requisição pelo body
+        let dadosBody = request.body;
+        console.log(dadosBody);
+
+        
+        // Encaminha os dados para o controller para adicionar o aluno ao grupo
+        let resultDadosAdicionarAluno = await controllerMembros.setInserirAlunoAoGrupo(dadosBody, contentType);
+        
+        // Retorna o status e os dados resultantes
+        response.status(resultDadosAdicionarAluno.status_code);
+        response.json(resultDadosAdicionarAluno);
+    } catch (error) {
+        console.error('Erro ao adicionar aluno ao grupo de mentoria:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
 
 // Endpoint: Deleta um grupo de mentoria pelo ID
 app.delete('/v1/studyfy/tipoQuestao/:id', cors(), async function(request, response) {
@@ -722,6 +752,7 @@ app.post('/v1/studyFy/login', cors(), bodyParserJSON, async function(request, re
     // Encaminha os dados para a controller realizar o login
     let resultadoLogin = await controllerAluno.loginUsuario(dadosBody.email, dadosBody.senha);
 
+    console.log(resultadoLogin);
     response.status(resultadoLogin.status_code);
     response.json(resultadoLogin);
 });

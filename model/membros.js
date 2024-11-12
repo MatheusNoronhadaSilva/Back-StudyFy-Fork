@@ -100,10 +100,30 @@ JOIN
         
 }
 
+const adicionarAlunoAoGrupo = async (alunoId, grupoMentoriaId) => {
+    try {
+
+        sql = `INSERT INTO tbl_membros (aluno_id, grupo_mentoria_id) VALUES
+        (${alunoId}, ${grupoMentoriaId});
+        `
+
+        console.log(sql);
+        // Adiciona o aluno ao grupo de mentoria
+        const resultNovoMembro = await prisma.$executeRawUnsafe(sql)
+
+        // Retorna os dados do novo membro adicionado
+        return resultNovoMembro;
+    } catch (error) {
+        console.error('Erro ao adicionar aluno ao grupo:', error);
+        return null;  // Retorna null em caso de erro
+    }
+};
+
 
 
 
 module.exports ={
+    adicionarAlunoAoGrupo,
     selectAllMembros,
     selectByIdMembro,
     selectMembrosMentores

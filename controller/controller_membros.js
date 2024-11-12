@@ -87,8 +87,48 @@ const getListarMembrosMentores = async function() {
     }
 }
 
+const setInserirAlunoAoGrupo = async function(dadosBody, contentType) {
+    try {
+
+        if (String(contentType).toLowerCase() == 'application/json') {
+
+                    // Validação dos dados
+        if (dadosBody == null) {
+            return {
+                status_code: 400,
+                message: message.ERROR_MISSING_DATA, // Mensagem de erro se os dados estão faltando
+            };
+        }
+
+        // Chama a função no DAO para adicionar o aluno ao grupo
+        const resultado = await membrosDAO.adicionarAlunoAoGrupo(dadosBody.alunoId, dadosBody.grupoId);
+
+        if (resultado) {
+            return {
+                status_code: 201,
+                message: message.SUCCESS_ADDED_TO_GROUP, // Mensagem de sucesso
+                membro: resultado, // Dados do membro que foi adicionado
+            };
+        } else {
+            return {
+                status_code: 500,
+                message: message.ERROR_INTERNAL_SERVER_DB, // Erro ao interagir com o banco de dados
+            };
+        }
+
+        } 
+    } catch (error) {
+        console.error('Erro ao adicionar aluno ao grupo:', error);
+        return {
+            status_code: 500,
+            message: message.ERROR_INTERNAL_SERVER, // Erro genérico do servidor
+        };
+    }
+};
+
 
 module.exports = {
+    setInserirAlunoAoGrupo,
     getListarMembros,
     getBuscarMembroId,
     getListarMembrosMentores

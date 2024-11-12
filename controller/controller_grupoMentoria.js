@@ -226,18 +226,22 @@ const setAtualizarGrupoMentoria = async function(id, dadosGrupoMentoria, content
     }
 };
 
-const getInformacoesTodosGruposMentoria = async () => {
-    try {        
-
-        console.log('oioioi');
+const getInformacoesTodosGruposMentoria = async (id, contentType) => {
+    try {    
         
-        const resultado = await grupoMentoriaDAO.buscarInformacoesTodosGruposMentoria();
+        if (String(contentType).toLowerCase() === 'application/json') {
 
-        if (!resultado || resultado.length === 0) {
-            return null; // Caso não encontre grupos de mentoria
+            console.log('oioioi');
+        
+            const resultado = await grupoMentoriaDAO.buscarInformacoesTodosGruposMentoria(id);
+    
+            if (!resultado || resultado.length === 0) {
+                return null; // Caso não encontre grupos de mentoria
+            }
+    
+            return resultado; // Retorna todos os grupos encontrados
+
         }
-
-        return resultado; // Retorna todos os grupos encontrados
     } catch (error) {
         console.error('Erro no controller ao buscar todos os grupos de mentoria:', error);
         throw error;

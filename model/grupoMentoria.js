@@ -164,30 +164,40 @@ const lastIDGrupoMentoria = async function(){
 }
 
 
-const buscarInformacoesTodosGruposMentoria = async () => {
+const buscarInformacoesTodosGruposMentoria = async (id) => {
     try {
         const sql = `
-            SELECT 
-    grupo_mentoria.id AS id_grupo,               -- id do grupo
-    grupo_mentoria.imagem_id AS foto_grupo,
-    grupo_mentoria.nome AS nome_grupo,
-    grupo_mentoria.materia AS materia_grupo,      -- Coluna para matéria do grupo
-    COUNT(DISTINCT resposta_duvida.id_resposta_duvida) AS quantidade_duvidas_respondidas,
-    COUNT(DISTINCT membros.id) AS quantidade_membros,
-    grupo_mentoria.capacidade AS capacidade_grupo
-FROM 
-    tbl_grupo_mentoria AS grupo_mentoria
-LEFT JOIN 
-    tbl_membros AS membros ON grupo_mentoria.id = membros.grupo_mentoria_id
-LEFT JOIN 
-    tbl_duvida_compartilhada AS duvida_compartilhada ON duvida_compartilhada.membro_id = membros.id
-LEFT JOIN 
-    tbl_resposta_duvida AS resposta_duvida ON resposta_duvida.duvida_compartilhada_id = duvida_compartilhada.id
-GROUP BY 
-    grupo_mentoria.id;
+        SELECT 
+        grupo_mentoria.id AS id_grupo,               
+        grupo_mentoria.imagem_id AS foto_grupo,
+        grupo_mentoria.nome AS nome_grupo,
+        grupo_mentoria.materia AS materia_grupo,      
+        COUNT(DISTINCT resposta_duvida.id_resposta_duvida) AS quantidade_duvidas_respondidas,
+        COUNT(DISTINCT membros.id) AS quantidade_membros,
+        grupo_mentoria.capacidade AS capacidade_grupo
+    FROM 
+        tbl_grupo_mentoria AS grupo_mentoria
+    LEFT JOIN 
+        tbl_membros AS membros ON grupo_mentoria.id = membros.grupo_mentoria_id
+    LEFT JOIN 
+        tbl_duvida_compartilhada AS duvida_compartilhada ON duvida_compartilhada.membro_id = membros.id
+    LEFT JOIN 
+        tbl_resposta_duvida AS resposta_duvida ON resposta_duvida.duvida_compartilhada_id = duvida_compartilhada.id
+    WHERE 
+        grupo_mentoria.id NOT IN (
+            SELECT grupo_mentoria_id 
+            FROM tbl_membros 
+            WHERE aluno_id = ${id}
+        )
+    GROUP BY 
+        grupo_mentoria.id;
         `;        
+
+        console.log(sql);
         
-        const resultado = await prisma.$queryRawUnsafe(sql);        
+        const resultado = await prisma.$queryRawUnsafe(sql);   
+        
+        console.log(resultado);
 
                 // Converte os valores de BigInt para string
                 const resultadoConvertido = resultado.map(grupo => ({
