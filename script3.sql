@@ -333,11 +333,14 @@ INSERT INTO tbl_imagens_grupo_mentoria (nome_imagem, caminho_imagem) VALUES
 INSERT INTO tbl_mentor (data_ingresso) VALUES
 (NOW());
 
+INSERT INTO tbl_mentor (data_ingresso) VALUES
+(NOW());
+
 
 -- Inserir dados na tabela tbl_grupo_mentoria
 INSERT INTO tbl_grupo_mentoria (nome, capacidade, descricao, imagem_id, materia, serie_min, serie_max, mentor_id) VALUES
 ('Grupo A', 10, 'Descrição do Grupo A', 1, 'matemática', 1, 3, 1),
-('Grupo B', 10, 'Descrição do Grupo B', 2, 'matemática', 1, 3, 1);
+('Grupo B', 10, 'Descrição do Grupo B', 2, 'matemática', 1, 3, 2);
 
 
 -- Inserir dados na tabela tbl_tipo_questao
@@ -409,7 +412,8 @@ desc tbl_grupo_mentoria;
 -- Inserir dados na tabela tbl_alunos
 INSERT INTO tbl_alunos (nome, email, senha, data_nascimento, telefone, serie,  pontos, id_rank, imagem_id) VALUES
 ('Aluno 1', 'aluno1@example.com', 'senha123', '2005-01-01', '123456789', '1ª série', 0, 1, 1),
-('Aluno 2', 'aluno2@example.com', 'senha456', '2005-02-01', '987654321', '2ª série', 0, 1, 2);
+('Aluno 2', 'aluno2@example.com', 'senha123', '2005-02-01', '987654321', '2ª série', 0, 1, 2),
+('Aluno 3', 'aluno3@example.com', 'senha123', '2005-02-01', '987654321', '2ª série', 0, 1, 1);
 
 
 -- Inserir dados na tabela tbl_salas_alunos
@@ -453,7 +457,8 @@ INSERT INTO tbl_professor_mentor (professor_id, mentor_id) VALUES
 
 -- Inserir dados na tabela tbl_aluno_mentor
 INSERT INTO tbl_aluno_mentor (aluno_id, mentor_id) VALUES
-(2, 1);
+(2, 1),
+(3, 2);
 
 -- Inserir dados na tabela tbl_emblema
 INSERT INTO tbl_emblema (nome, descricao, icone) VALUES
