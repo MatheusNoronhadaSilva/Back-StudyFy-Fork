@@ -231,7 +231,7 @@ FROM
 JOIN 
     tbl_membros m ON m.grupo_mentoria_id = g.id
 WHERE 
-    m.aluno_id = ${idAluno.id};`
+    m.aluno_id = ${idAluno};`
 
     console.log(sql);
     

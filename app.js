@@ -410,16 +410,15 @@ app.get('/v1/studyfy/gruposMentoria/:id', cors(), async function(request, respon
     }
 });
 
-app.post('/v1/studyfy/grupoMentoriaAluno', cors(), bodyParserJSON, async function(request, response) {
+app.get('/v1/studyfy/grupoMentoriaAluno/:id', cors(), async function(request, response) {
     try {
-        // Recebe o content-type da requisição
-        let contentType = request.headers['content-type'];
-        
         // Recebe todos os dados encaminhados na requisição pelo body
-        let dadosBody = request.body;
+        let dadosBody = request.params.id;
+        console.log(dadosBody);
+        
         
         // Encaminha os dados para a controller
-        let result = await controllerGrupoMentoria.getGruposMentoriasAluno(dadosBody, contentType);
+        let result = await controllerGrupoMentoria.getGruposMentoriasAluno(dadosBody);
         
         // Define o status da resposta e envia os dados de volta
         response.status(200);
