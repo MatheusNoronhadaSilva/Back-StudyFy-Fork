@@ -388,17 +388,16 @@ app.put('/v1/studyfy/mentorias/:id', cors(), bodyParserJSON, async function(requ
 });
 
 
-app.post('/v1/studyfy/gruposMentoria', cors(), bodyParserJSON, async function(request, response) {
+app.get('/v1/studyfy/gruposMentoria/:id', cors(), async function(request, response) {
     try {
 
         console.log('yyyy');
-        let contentType = request.headers['content-type'];
 
-        let dadosBody = request.body.params.idAluno;
+        let dadosBody = request.params.id;
 
         console.log(dadosBody);
 
-        const resultadoGrupos = await controllerGrupoMentoria.getInformacoesTodosGruposMentoria(dadosBody, contentType);
+        const resultadoGrupos = await controllerGrupoMentoria.getInformacoesTodosGruposMentoria(dadosBody);
 
         if (!resultadoGrupos || resultadoGrupos.length === 0) {
             return response.status(404).json({ message: 'Nenhum grupo de mentoria encontrado.' });
@@ -501,6 +500,58 @@ app.get('/v1/studyfy/membros/mentor', cors(), async function(request, response) 
     }
 });
 
+app.post('/v1/studyfy/membros/grupo', cors(), bodyParser.json(), async function(request, response) {
+    try {
+
+        console.log('oiiiii');
+        // Recebe o content-type da requisição
+        let contentType = request.headers['content-type'];
+        
+        // Recebe todos os dados encaminhados na requisição pelo body
+        let dadosBody = request.body;
+        console.log(dadosBody);
+
+        
+        // Encaminha os dados para o controller para adicionar o aluno ao grupo
+        let resultDadosAdicionarAluno = await controllerMembros.setInserirAlunoAoGrupo(dadosBody, contentType);
+        
+        // Retorna o status e os dados resultantes
+        response.status(resultDadosAdicionarAluno.status_code);
+        response.json(resultDadosAdicionarAluno);
+    } catch (error) {
+        console.error('Erro ao adicionar aluno ao grupo de mentoria:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
+// Endpoint: Remove um membro de um grupo de mentoria
+app.delete('/v1/studyfy/mentoria/membro', cors(), bodyParserJSON, async function(request, response) {
+    try {
+        console.log('saindo');
+        
+        // Recebe o content-type da requisição
+        let contentType = request.headers['content-type'];
+        
+        // Recebe os dados encaminhados na requisição pelo body
+        let dadosBody = request.body;
+
+        console.log(dadosBody);
+        
+        
+        // Encaminha os dados para a controller enviar para o DAO
+        let resultRemoverMembro = await controllerMembros.setRemoverMembroGrupo(dadosBody, contentType);
+        
+        console.log(resultRemoverMembro);
+        
+        response.status(200);
+        response.json(resultRemoverMembro);
+    } catch (error) {
+        console.error('Erro ao remover membro do grupo de mentoria:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
+
 
 
 // --------------------   CRUD TIPO QUESTAO  ---------------------        
@@ -552,30 +603,6 @@ app.post('/v1/studyfy/tipoQuestao', cors(), bodyParserJSON, async function(reque
         response.json(resultDadosNovoTipoQuestao );
     } catch (error) {
         console.error('Erro ao inserir grupo de mentoria:', error);
-        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
-    }
-});
-
-app.post('/v1/studyfy/membros/grupo', cors(), bodyParser.json(), async function(request, response) {
-    try {
-
-        console.log('oiiiii');
-        // Recebe o content-type da requisição
-        let contentType = request.headers['content-type'];
-        
-        // Recebe todos os dados encaminhados na requisição pelo body
-        let dadosBody = request.body;
-        console.log(dadosBody);
-
-        
-        // Encaminha os dados para o controller para adicionar o aluno ao grupo
-        let resultDadosAdicionarAluno = await controllerMembros.setInserirAlunoAoGrupo(dadosBody, contentType);
-        
-        // Retorna o status e os dados resultantes
-        response.status(resultDadosAdicionarAluno.status_code);
-        response.json(resultDadosAdicionarAluno);
-    } catch (error) {
-        console.error('Erro ao adicionar aluno ao grupo de mentoria:', error);
         response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
     }
 });
@@ -1507,6 +1534,7 @@ app.get('/v1/studyfy/imagens/grupo-mentoria', async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar imagens' });
     }
 });
+
 
 
 

@@ -5,13 +5,13 @@
 *******************************************************/
 
 // Importa de biblioteca do @prisma/client
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
 
 // Instacia da classe PrismaClient
 const prisma = new PrismaClient()
 
 
-const selectAllMembros = async function(){
+const selectAllMembros = async function () {
     try {
         // Realiza a busca do genero pelo ID
         let sql = `SELECT 
@@ -27,23 +27,23 @@ JOIN
     tbl_grupo_mentoria gm ON m.grupo_mentoria_id = gm.id;`;
 
         // Executa no banco de dados o script sql
-        let rsMembros= await prisma.$queryRawUnsafe(sql);
+        let rsMembros = await prisma.$queryRawUnsafe(sql);
 
-            return rsMembros;
-    
-        } catch (error) {
-            console.log(error);
-            return false;
-            
-        }
-        
+        return rsMembros;
+
+    } catch (error) {
+        console.log(error);
+        return false;
+
+    }
+
 }
 
 
-const selectByIdMembro =async function(id){
+const selectByIdMembro = async function (id) {
     try {
 
-        let sql=`SELECT 
+        let sql = `SELECT 
     a.id AS aluno_id,
     a.nome AS aluno_nome,
     a.email AS aluno_email,
@@ -57,19 +57,19 @@ JOIN
 WHERE 
     gm.id IN (${id})`;
 
-    console.log(sql);
-    
+        console.log(sql);
+
         let rsMateria = await prisma.$queryRawUnsafe(sql)
         return rsMateria
 
-    }catch (error) {
+    } catch (error) {
         console.log(error);
-        
+
         return false
     }
 }
 
-const  selectMembrosMentores = async function(){
+const selectMembrosMentores = async function () {
     try {
         // Realiza a busca do genero pelo ID
         let sql = `  SELECT 
@@ -88,16 +88,16 @@ JOIN
     tbl_mentor AS mentor ON grupo_mentoria.mentor_id = mentor.id;`;
 
         // Executa no banco de dados o script sql
-        let rsMembros= await prisma.$queryRawUnsafe(sql);
+        let rsMembros = await prisma.$queryRawUnsafe(sql);
 
-            return rsMembros;
-    
-        } catch (error) {
-            console.log(error);
-            return false;
-            
-        }
-        
+        return rsMembros;
+
+    } catch (error) {
+        console.log(error);
+        return false;
+
+    }
+
 }
 
 const adicionarAlunoAoGrupo = async (alunoId, grupoMentoriaId) => {
@@ -119,10 +119,48 @@ const adicionarAlunoAoGrupo = async (alunoId, grupoMentoriaId) => {
     }
 };
 
+//adicionar
+
+const deletarMembroGrupo = async (alunoId, grupoMentoriaId) => {
+    try {
+
+               // Primeiro, exclua as respostas de dúvida relacionadas ao membro
+               const sqlDeleteRespostas = `
+               DELETE FROM tbl_resposta_duvida
+               WHERE duvida_compartilhada_id IN (
+                   SELECT id FROM tbl_duvida_compartilhada
+                   WHERE membro_id = ${alunoId}
+               );
+           `;
+           await prisma.$executeRawUnsafe(sqlDeleteRespostas);
+
+        // Remover as referências do membro na tabela 'tbl_duvida_compartilhada'
+        const sqlDeleteDuvida = `
+                DELETE FROM tbl_duvida_compartilhada
+                WHERE membro_id = ${alunoId};
+            `;
+        await prisma.$executeRawUnsafe(sqlDeleteDuvida);
+
+        sql = `DELETE FROM tbl_membros 
+        WHERE aluno_id = ${alunoId} AND grupo_mentoria_id = ${grupoMentoriaId};
+        `
+
+        console.log(sql);
+        // Adiciona o aluno ao grupo de mentoria
+        const resultNovoMembro = await prisma.$executeRawUnsafe(sql)
+
+        // Retorna os dados do novo membro adicionado
+        return resultNovoMembro;
+    } catch (error) {
+        console.error('Erro ao deletar aluno ao grupo:', error);
+        return null;  // Retorna null em caso de erro
+    }
+};
 
 
 
-module.exports ={
+module.exports = {
+    deletarMembroGrupo,
     adicionarAlunoAoGrupo,
     selectAllMembros,
     selectByIdMembro,

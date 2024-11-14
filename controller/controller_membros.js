@@ -126,8 +126,37 @@ const setInserirAlunoAoGrupo = async function(dadosBody, contentType) {
     }
 };
 
+//adicionar
+
+async function setRemoverMembroGrupo(dadosBody, contentType) {
+    try {
+        if (contentType !== 'application/json') {
+            return { status_code: 400, message: 'Content-Type inválido. Esperado: application/json' };
+        }
+        
+        const aluno_id = dadosBody.alunoId;
+        const grupo_mentoria_id = dadosBody.grupoId
+
+        console.log(aluno_id);
+        
+        // Validação dos dados recebidos
+        if (!aluno_id || !grupo_mentoria_id) {
+            return { status_code: 400, message: 'Dados incompletos. ID do aluno e ID do grupo de mentoria são necessários.' };
+        }
+
+        // Encaminha para o model remover no banco de dados
+        const result = await membrosDAO.deletarMembroGrupo(aluno_id, grupo_mentoria_id);
+        
+        return result;
+    } catch (error) {
+        console.error('Erro no controller ao remover membro do grupo de mentoria:', error);
+        return { status_code: 500, message: 'Erro interno no servidor' };
+    }
+}
+
 
 module.exports = {
+    setRemoverMembroGrupo,
     setInserirAlunoAoGrupo,
     getListarMembros,
     getBuscarMembroId,
