@@ -51,8 +51,44 @@ const selectAllAlunos = async function(){
 
 const selectUsuarioByEmailESenha = async function(email, senha) {
     try {
-        let sql = `SELECT id FROM tbl_alunos WHERE email = '${email}' AND senha = '${senha}';`;
-        let rsAluno = await prisma.$queryRawUnsafe(sql);
+        let sql = `SELECT 
+    'Aluno' AS tipo_usuario,
+    aluno.id AS usuario_id,
+    aluno.nome AS nome_usuario,
+    CASE 
+        WHEN aluno_mentor.mentor_id IS NOT NULL THEN 1 
+        ELSE 0 
+    END AS eh_mentor,
+    aluno_mentor.mentor_id AS id_mentor
+FROM 
+    tbl_alunos aluno
+LEFT JOIN 
+    tbl_aluno_mentor aluno_mentor ON aluno.id = aluno_mentor.aluno_id
+WHERE 
+    aluno.email = '${email}' AND aluno.senha = '${senha}'
+
+UNION
+
+SELECT 
+    'Professor' AS tipo_usuario,
+    professor.id AS usuario_id,
+    professor.nome AS nome_usuario,
+    CASE 
+        WHEN professor_mentor.mentor_id IS NOT NULL THEN 1 
+        ELSE 0 
+    END AS eh_mentor,
+    professor_mentor.mentor_id AS id_mentor
+FROM 
+    tbl_professor professor
+LEFT JOIN 
+    tbl_professor_mentor professor_mentor ON professor.id = professor_mentor.professor_id
+WHERE 
+    professor.email = '${email}' AND professor.senha = '${senha}';`;
+        let rsAluno = await prisma.$queryRawUnsafe(sql);       
+        
+        rsAluno[0].eh_mentor = Number(rsAluno[0].eh_mentor);
+        console.log(rsAluno[0]);
+        
         return rsAluno;
     } catch (error) {
         console.log(error);

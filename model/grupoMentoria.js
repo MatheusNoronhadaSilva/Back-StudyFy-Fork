@@ -17,26 +17,47 @@ const selectGrupoMentoriaByID = async function(id) {
         // Realiza a busca do grupo de mentoria pelo ID
         let sql = `SELECT 
     tbl_grupo_mentoria.*, 
-    COUNT(tbl_membros.id) AS quantidade_membros
+    COUNT(tbl_membros.id) AS quantidade_membros, 
+    tbl_materias.nome_materia AS nome_materia, 
+    tbl_materias.imagem_materia AS imagem_materia,
+    tbl_imagens_grupo_mentoria.caminho_imagem AS imagem_grupo  -- Adicionando a imagem do grupo de mentoria
 FROM 
     tbl_grupo_mentoria
 LEFT JOIN 
     tbl_membros ON tbl_grupo_mentoria.id = tbl_membros.grupo_mentoria_id
+LEFT JOIN 
+    tbl_materias ON tbl_grupo_mentoria.materia_id = tbl_materias.id
+LEFT JOIN 
+    tbl_imagens_grupo_mentoria ON tbl_grupo_mentoria.imagem_id = tbl_imagens_grupo_mentoria.id  -- Junta a imagem do grupo
 WHERE 
     tbl_grupo_mentoria.id = ${id}
 GROUP BY 
-    tbl_grupo_mentoria.id;
+    tbl_grupo_mentoria.id, 
+    tbl_materias.nome_materia, 
+    tbl_materias.imagem_materia, 
+    tbl_imagens_grupo_mentoria.caminho_imagem;
+
 `;
 
-        // Executa no banco de dados o script SQL
-        let rsGrupoMentoria = await prisma.$queryRawUnsafe(sql);        
+console.log('dddddddddddd');
 
-        const resultadoConvertido = rsGrupoMentoria.map(grupo => ({
+        // Executa no banco de dados o script SQL
+        let rsGrupoMentoria = await prisma.$queryRawUnsafe(sql);    
+        
+
+        console.log('teste2');
+        
+        console.log('testenovo' + rsGrupoMentoria);
+        
+
+        const resultadoConvertido = rsGrupoMentoria.map(grupo => ({            
             id: grupo.id,
             nome: grupo.nome,
             capacidade: grupo.capacidade,
             descricao: grupo.descricao,
-            materia: grupo.materia,
+            materia_nome: grupo.materia_nome,
+            materia_imagem: grupo.imagem_materia,
+            foto_grupo: grupo.imagem_grupo,
             serie_min: grupo.serie_min,
             serie_max: grupo.serie_max,
             imagem_id: grupo.imagem_id,
@@ -168,29 +189,39 @@ const buscarInformacoesTodosGruposMentoria = async (id) => {
     try {
         const sql = `
         SELECT 
-        grupo_mentoria.id AS id_grupo,               
-        grupo_mentoria.imagem_id AS foto_grupo,
-        grupo_mentoria.nome AS nome_grupo,
-        grupo_mentoria.materia AS materia_grupo,      
-        COUNT(DISTINCT resposta_duvida.id_resposta_duvida) AS quantidade_duvidas_respondidas,
-        COUNT(DISTINCT membros.id) AS quantidade_membros,
-        grupo_mentoria.capacidade AS capacidade_grupo
-    FROM 
-        tbl_grupo_mentoria AS grupo_mentoria
-    LEFT JOIN 
-        tbl_membros AS membros ON grupo_mentoria.id = membros.grupo_mentoria_id
-    LEFT JOIN 
-        tbl_duvida_compartilhada AS duvida_compartilhada ON duvida_compartilhada.membro_id = membros.id
-    LEFT JOIN 
-        tbl_resposta_duvida AS resposta_duvida ON resposta_duvida.duvida_compartilhada_id = duvida_compartilhada.id
-    WHERE 
-        grupo_mentoria.id NOT IN (
-            SELECT grupo_mentoria_id 
-            FROM tbl_membros 
-            WHERE aluno_id = ${id}
-        )
-    GROUP BY 
-        grupo_mentoria.id;
+    grupo_mentoria.id AS id_grupo,               
+    grupo_mentoria.nome AS nome_grupo,
+    imagens_grupo_mentoria.nome_imagem AS nome_imagem_grupo,
+    imagens_grupo_mentoria.caminho_imagem AS caminho_imagem_grupo,
+    grupo_mentoria.capacidade AS capacidade_grupo,
+    COUNT(DISTINCT membros.id) AS quantidade_membros,
+    COUNT(DISTINCT resposta_duvida.id_resposta_duvida) AS quantidade_duvidas_respondidas,
+    materia.nome_materia AS nome_materia,
+    materia.imagem_materia AS imagem_materia
+FROM 
+    tbl_grupo_mentoria AS grupo_mentoria
+LEFT JOIN 
+    tbl_membros AS membros ON grupo_mentoria.id = membros.grupo_mentoria_id
+LEFT JOIN 
+    tbl_duvida_compartilhada AS duvida_compartilhada ON duvida_compartilhada.membro_id = membros.id
+LEFT JOIN 
+    tbl_resposta_duvida AS resposta_duvida ON resposta_duvida.duvida_compartilhada_id = duvida_compartilhada.id
+LEFT JOIN 
+    tbl_materias AS materia ON grupo_mentoria.materia_id = materia.id
+LEFT JOIN 
+    tbl_imagens_grupo_mentoria AS imagens_grupo_mentoria ON grupo_mentoria.imagem_id = imagens_grupo_mentoria.id
+WHERE 
+    grupo_mentoria.id NOT IN (
+        SELECT grupo_mentoria_id 
+        FROM tbl_membros 
+        WHERE aluno_id = ${id}
+    )
+GROUP BY 
+    grupo_mentoria.id, 
+    imagens_grupo_mentoria.nome_imagem, 
+    imagens_grupo_mentoria.caminho_imagem,
+    materia.nome_materia, 
+    materia.imagem_materia;
         `;        
 
         console.log(sql);
@@ -202,9 +233,10 @@ const buscarInformacoesTodosGruposMentoria = async (id) => {
                 // Converte os valores de BigInt para string
                 const resultadoConvertido = resultado.map(grupo => ({
                     id: grupo.id_grupo,
-                    foto_grupo: grupo.foto_grupo,
+                    foto_grupo: grupo.caminho_imagem_grupo,
                     nome_grupo: grupo.nome_grupo,
-                    materia_grupo: grupo.materia_grupo,
+                    materia_nome: grupo.nome_materia,
+                    materia_imagem: grupo.imagem_materia,
                     quantidade_duvidas_respondidas: grupo.quantidade_duvidas_respondidas.toString(),
                     quantidade_membros: grupo.quantidade_membros.toString(),
                     capacidade_grupo: grupo.capacidade_grupo
@@ -222,16 +254,23 @@ const selectGruposAluno = async(idAluno) => {
     
     try {
         let sql = `SELECT 
-    g.id AS grupo_id,
-    g.nome AS nome_grupo,
-    g.imagem_id AS foto_perfil,
-    g.materia AS materia_grupo
+    grupo_mentoria.id AS id_grupo,
+    grupo_mentoria.nome AS nome_grupo,
+    imagens_grupo_mentoria.nome_imagem AS nome_imagem_grupo,
+    imagens_grupo_mentoria.caminho_imagem AS caminho_imagem_grupo,
+    materias.nome_materia AS nome_materia,
+    materias.imagem_materia AS caminho_imagem_materia
 FROM 
-    tbl_grupo_mentoria g
+    tbl_grupo_mentoria AS grupo_mentoria
 JOIN 
-    tbl_membros m ON m.grupo_mentoria_id = g.id
+    tbl_membros AS membros ON membros.grupo_mentoria_id = grupo_mentoria.id
+LEFT JOIN 
+    tbl_imagens_grupo_mentoria AS imagens_grupo_mentoria ON grupo_mentoria.imagem_id = imagens_grupo_mentoria.id
+LEFT JOIN 
+    tbl_materias AS materias ON grupo_mentoria.materia_id = materias.id
 WHERE 
-    m.aluno_id = ${idAluno.id};`
+    membros.aluno_id = ${idAluno};
+`
 
     console.log(sql);
     
@@ -252,27 +291,33 @@ const selectMentorByGrupoId = async (idGrupo) => {
     try {
         // Consulta SQL para pegar o mentor com base no ID do grupo de mentoria
         const sql = `
-            SELECT 
-                tbl_mentor.id AS mentor_id,
-                COALESCE(tbl_professor.nome, tbl_alunos.nome) AS mentor_nome,  -- Pega o nome, seja de professor ou aluno
-                CASE
-                    WHEN tbl_professor.id IS NOT NULL THEN 'Professor'
-                    WHEN tbl_alunos.id IS NOT NULL THEN 'Aluno/mentor'
-                END AS mentor_tipo  -- Identifica se o mentor é um professor ou aluno
-            FROM 
-                tbl_grupo_mentoria
-            LEFT JOIN 
-                tbl_membros ON tbl_membros.grupo_mentoria_id = tbl_grupo_mentoria.id
-            LEFT JOIN 
-                tbl_mentor ON tbl_mentor.id = tbl_grupo_mentoria.mentor_id
-            LEFT JOIN 
-                tbl_professor ON tbl_professor.id = tbl_mentor.id  -- Junta com professor
-            LEFT JOIN 
-                tbl_alunos ON tbl_alunos.id = tbl_mentor.id  -- Junta com aluno
-            WHERE 
-                tbl_grupo_mentoria.id = ${idGrupo}
-            GROUP BY 
-                tbl_grupo_mentoria.id, tbl_mentor.id;
+SELECT 
+    tbl_mentor.id AS mentor_id,
+    COALESCE(tbl_professor.nome, tbl_alunos.nome) AS mentor_nome,  -- Pega o nome, seja de professor ou aluno
+    CASE
+        WHEN tbl_professor.id IS NOT NULL THEN 'Professor'
+        WHEN tbl_alunos.id IS NOT NULL THEN 'Aluno/mentor'
+    END AS mentor_tipo,  -- Identifica se o mentor é um professor ou aluno
+    COALESCE(tbl_professor_imagens.caminho_imagem, tbl_alunos_imagens.caminho_imagem) AS foto_perfil  -- Caminho da imagem de perfil, se existirem
+FROM 
+    tbl_grupo_mentoria
+LEFT JOIN 
+    tbl_membros ON tbl_membros.grupo_mentoria_id = tbl_grupo_mentoria.id
+LEFT JOIN 
+    tbl_mentor ON tbl_mentor.id = tbl_grupo_mentoria.mentor_id
+LEFT JOIN 
+    tbl_professor ON tbl_professor.id = tbl_mentor.id  -- Junta com professor
+LEFT JOIN 
+    tbl_alunos ON tbl_alunos.id = tbl_mentor.id  -- Junta com aluno
+LEFT JOIN 
+    tbl_imagens_usuario AS tbl_professor_imagens ON tbl_professor_imagens.id = tbl_professor.imagem_id  -- Imagem do professor
+LEFT JOIN 
+    tbl_imagens_usuario AS tbl_alunos_imagens ON tbl_alunos_imagens.id = tbl_alunos.imagem_id  -- Imagem do aluno
+WHERE 
+    tbl_grupo_mentoria.id = ${idGrupo}
+GROUP BY 
+    tbl_grupo_mentoria.id, tbl_mentor.id;
+
         `;
 
         // Executa a consulta SQL, passando o ID do grupo como parâmetro

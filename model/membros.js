@@ -44,18 +44,25 @@ const selectByIdMembro = async function (id) {
     try {
 
         let sql = `SELECT 
-    a.id AS aluno_id,
-    a.nome AS aluno_nome,
-    a.email AS aluno_email,
-    gm.nome AS grupo_mentoria_nome
+    alunos.id AS aluno_id,
+    alunos.nome AS aluno_nome,
+    alunos.email AS aluno_email,
+    grupo_mentoria.nome AS grupo_mentoria_nome,
+    series.nome AS serie_nome,                -- Nome da série do aluno
+    imagens_usuario.caminho_imagem AS aluno_imagem    -- Caminho da imagem do aluno
 FROM 
-    tbl_membros m
+    tbl_membros membros
 JOIN 
-    tbl_alunos a ON m.aluno_id = a.id
+    tbl_alunos alunos ON membros.aluno_id = alunos.id
 JOIN 
-    tbl_grupo_mentoria gm ON m.grupo_mentoria_id = gm.id
+    tbl_grupo_mentoria grupo_mentoria ON membros.grupo_mentoria_id = grupo_mentoria.id
+JOIN 
+    tbl_series series ON alunos.serie_id = series.id  -- Relaciona a série do aluno
+LEFT JOIN 
+    tbl_imagens_usuario imagens_usuario ON alunos.imagem_id = imagens_usuario.id  -- Se houver, pega a imagem do aluno
 WHERE 
-    gm.id IN (${id})`;
+    grupo_mentoria.id IN (${id});
+`;
 
         console.log(sql);
 

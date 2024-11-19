@@ -136,6 +136,7 @@ const InsertByIdTipoQuestao = async function (){
 }
 
 
+
 module.exports ={
     selectTipoQuestao,
     lastIDTipoQuestao,

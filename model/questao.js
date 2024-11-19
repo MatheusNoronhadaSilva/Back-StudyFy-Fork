@@ -102,7 +102,137 @@ JOIN
     }
 }
 
+const selectQuestaoPorAtividade = async function(idAtividade) {
+    try {
+        let sql = `
+            SELECT 
+                tbl_questao.id AS questao_id,
+                tbl_questao.enunciado AS questao_pergunta,
+                tbl_questao.tipo_questao_id AS questao_tipo_id,
+                tbl_questao.imagem AS questao_imagem
+            FROM 
+                tbl_atividade_questoes
+            JOIN 
+                tbl_atividades ON tbl_atividade_questoes.atividade_id = tbl_atividades.id
+            JOIN 
+                tbl_questao ON tbl_atividade_questoes.questao_id = tbl_questao.id
+            WHERE 
+                tbl_atividades.id = ${idAtividade}
+            ORDER BY 
+                tbl_questao.id;
+        `;
+        let questoes = await prisma.$queryRawUnsafe(sql);
+        return questoes;
+    } catch (error) {
+        console.error('Erro ao buscar questões:', error);
+        return false;
+    }
+};
+
+const selectRespostasMultiplaEscolha = async function(questaoId) {
+    try {
+        let sql = `
+            SELECT * 
+            FROM tbl_resposta_multipla_escolha 
+            WHERE questao_id = ${questaoId};
+        `;
+        return await prisma.$queryRawUnsafe(sql);
+    } catch (error) {
+        console.error('Erro ao buscar respostas de múltipla escolha:', error);
+        return null;
+    }
+};
+
+const selectRespostasVerdadeiroFalso = async function(questaoId) {
+    try {
+        let sql = `
+            SELECT * 
+            FROM tbl_resposta_verdadeiro_falso 
+            WHERE questao_id = ${questaoId};
+        `;
+        return await prisma.$queryRawUnsafe(sql);
+    } catch (error) {
+        console.error('Erro ao buscar respostas de verdadeiro/falso:', error);
+        return null;
+    }
+};
+
+const selectRespostasLacunas = async function(questaoId) {
+    try {
+        let sql = `
+            SELECT * 
+            FROM tbl_resposta_lacunas 
+            WHERE questao_id = ${questaoId};
+        `;
+        return await prisma.$queryRawUnsafe(sql);
+    } catch (error) {
+        console.error('Erro ao buscar respostas de lacunas:', error);
+        return null;
+    }
+};
+
+const selectRespostasCorrespondencia = async function(questaoId) {
+    try {
+        let sql = `
+            SELECT * 
+            FROM tbl_resposta_correspondencia 
+            WHERE questao_id = ${questaoId};
+        `;
+        return await prisma.$queryRawUnsafe(sql);
+    } catch (error) {
+        console.error('Erro ao buscar respostas de correspondência:', error);
+        return null;
+    }
+};
+
+const selectAtividadesByMateriaAndSerie = async function(materiaId, serieId) {
+    try {
+        let sql = `
+            SELECT 
+                atividade.id AS id_da_atividade,
+                atividade.titulo AS titulo_da_atividade,
+                atividade.descricao AS descricao_da_atividade,
+                assunto.id AS id_do_assunto,
+                assunto.nome AS nome_do_assunto,
+                assunto.cor AS cor_assunto,
+                sub_assunto.id AS id_do_sub_assunto,
+                sub_assunto.nome AS nome_do_sub_assunto,
+                materia.id AS id_da_materia,
+                materia.nome_materia AS nome_da_materia,
+                serie.id AS id_da_serie,
+                serie.nome AS nome_da_serie
+            FROM 
+                tbl_atividades atividade
+            JOIN 
+                tbl_assuntos assunto ON atividade.assunto_id = assunto.id
+            LEFT JOIN 
+                tbl_assuntos sub_assunto ON atividade.sub_assunto_id = sub_assunto.id
+            JOIN 
+                tbl_materias materia ON atividade.materia_id = materia.id
+            JOIN 
+                tbl_series serie ON atividade.serie_id = serie.id
+            WHERE 
+                atividade.materia_id = ${materiaId} 
+                AND atividade.serie_id = ${serieId}
+        `;
+        
+        let atividades = await prisma.$queryRawUnsafe(sql);
+        return atividades;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+};
+
+
+
 module.exports = {
+    selectAtividadesByMateriaAndSerie,
+    selectRespostasCorrespondencia,
+    selectRespostasLacunas,
+    selectRespostasMultiplaEscolha,
+    selectRespostasVerdadeiroFalso,
+    selectQuestaoPorAtividade,
     selectAllQuestoes,
     selectQuestaoByID,
     insertQuestao,

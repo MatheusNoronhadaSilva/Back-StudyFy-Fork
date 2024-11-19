@@ -244,11 +244,9 @@ const getInformacoesTodosGruposMentoria = async (id) => {
     }
 };
 
-const getGruposMentoriasAluno = async (idAluno, contentType) => {
+const getGruposMentoriasAluno = async (idAluno) => {
     try {
         
-        if (String(contentType).toLowerCase() === 'application/json') {
-
             const resultado = await grupoMentoriaDAO.selectGruposAluno(idAluno);
 
             if (!resultado || resultado.length === 0) {
@@ -257,7 +255,6 @@ const getGruposMentoriasAluno = async (idAluno, contentType) => {
     
             return resultado; // Retorna todos os grupos encontrados
 
-        }
     } catch (error) {
         console.error('Erro no controller ao buscar todos os grupos de mentoria:', error);
         throw error;
