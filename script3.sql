@@ -1,11 +1,15 @@
--- Criação do banco de dados
 drop database studyfy;
 create DATABASE StudyFy;
 
 USE StudyFy;
 
-
 -- CRIAÇÃO DE TABELAS --
+
+CREATE TABLE tbl_series (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(50) NOT NULL, -- Nome da série, como "1º Ano" ou "Ensino Fundamental"
+    descricao TEXT -- Descrição opcional da série
+);
 
 -- Tabela tbl_mentor
 CREATE TABLE tbl_mentor (
@@ -25,18 +29,28 @@ CREATE TABLE tbl_imagens_grupo_mentoria (
     caminho_imagem VARCHAR(500) NOT NULL -- URL para o arquivo de imagem
 );
 
+-- Tabela tbl_materias
+CREATE TABLE tbl_materias (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome_materia VARCHAR(90) NOT NULL,
+    imagem_materia varchar(255) not null
+);
+
 -- Tabela tbl_grupo_mentoria
 CREATE TABLE tbl_grupo_mentoria (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    nome VARCHAR(30) NOT NULL,
+    nome VARCHAR(50) NOT NULL,
     capacidade INT NOT NULL,
     descricao TINYTEXT,
-    materia varchar (256) NOT NULL,
-    serie_min INT,
-    serie_max INT,
+    materia_id int NOT NULL,
+    serie_min INT not null,
+    serie_max INT not null,
     imagem_id INT, -- ID da imagem do grupo de mentoria
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     mentor_id INT NOT NULL,
+	foreign key (materia_id) references tbl_materias(id),
+    foreign key (serie_min) references tbl_series(id),
+	foreign key (serie_max) references tbl_series(id),
     FOREIGN KEY (imagem_id) REFERENCES tbl_imagens_grupo_mentoria(id),
     FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id)
 );
@@ -59,12 +73,18 @@ CREATE TABLE tbl_tipo_questao (
 -- Tabela tbl_questao
 CREATE TABLE tbl_questao (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    enunciado VARCHAR(45) NOT NULL,
+    enunciado VARCHAR(150) NOT NULL,
     tipo_questao_id INT NOT NULL,
     imagem VARCHAR(300),
-    atividade_grupo_mentoria_id INT NOT NULL,
-    FOREIGN KEY (atividade_grupo_mentoria_id) REFERENCES tbl_atividade_grupo_mentoria(id),
     FOREIGN KEY (tipo_questao_id) REFERENCES tbl_tipo_questao(id)
+);
+
+create table tbl_questao_atividade_grupo_mentoria (
+   id int auto_increment primary key not null,
+   questao_id int not null,
+   atividade_grupo_mentoria_id int not null,
+   foreign key (questao_id) references tbl_questao(id),
+   foreign key (atividade_grupo_mentoria_id) references tbl_atividade_grupo_mentoria(id)
 );
 
 -- Tabela tbl_resposta_lacunas
@@ -113,17 +133,12 @@ CREATE TABLE tbl_ordem_palavra (
     FOREIGN KEY (questao_id) REFERENCES tbl_questao(id)
 );
 
--- Tabela tbl_materias
-CREATE TABLE tbl_materias (
-    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    nome_materia VARCHAR(90) NOT NULL
-);
-
 -- Criação da tabela ranks
 CREATE TABLE  tbl_ranks(
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,
     nivel INT NOT NULL,
+    imagem varchar(255) not null,
     num_salas INT NOT NULL
 );
 
@@ -159,13 +174,23 @@ CREATE TABLE tbl_alunos (
     senha VARCHAR(25) NOT NULL,
     data_nascimento DATE NOT NULL,
     telefone VARCHAR(20) NOT NULL,
-    serie VARCHAR(20) NOT NULL,
+    serie_id int NOT NULL,
     imagem_id INT, -- ID da imagem do usuário
     pontos INT DEFAULT 0,
     id_rank INT DEFAULT 1,
+	foreign key (serie_id) references tbl_series(id),
     FOREIGN KEY (id_rank) REFERENCES tbl_ranks(id),
     FOREIGN KEY (imagem_id) REFERENCES tbl_imagens_usuario(id)
 );
+
+CREATE TABLE caderno_virtual (
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    conteudo TEXT NOT NULL, 
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    id_aluno INT, 
+    FOREIGN KEY (id_aluno) REFERENCES tbl_alunos(id)
+);
+
 
 
 CREATE TABLE tbl_salas_alunos (
@@ -226,23 +251,6 @@ CREATE TABLE tbl_membros (
     FOREIGN KEY (aluno_id) REFERENCES tbl_alunos(id),
     FOREIGN KEY (grupo_mentoria_id) REFERENCES tbl_grupo_mentoria(id)
 );
-
-SELECT 
-    tbl_grupo_mentoria.*,
-    COUNT(tbl_membros.id) AS numero_membros
-FROM 
-    tbl_grupo_mentoria
-LEFT JOIN 
-    tbl_membros ON tbl_grupo_mentoria.id = tbl_membros.grupo_mentoria_id
-WHERE 
-    tbl_grupo_mentoria.id = 1
-GROUP BY 
-    tbl_grupo_mentoria.id;
-    
-    DESCRIBE tbl_grupo_mentoria;
-DESCRIBE tbl_mentor;
-DESCRIBE tbl_alunos;
-DESCRIBE tbl_membros;
 
 -- Tabela tbl_duvida_compartilhada
 CREATE TABLE tbl_duvida_compartilhada (
@@ -313,6 +321,51 @@ CREATE TABLE tbl_aluno_emblema (
     FOREIGN KEY (id_nivel_emblema) REFERENCES tbl_nivel_emblema(id) ON DELETE CASCADE
 );
 
+-- Tabela tbl_assuntos
+CREATE TABLE tbl_assuntos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(100) NOT NULL, -- Nome do assunto ou sub-assunto
+    id_assunto_pai INT, -- Referência ao assunto pai para estruturar sub-assuntos
+    cor varchar(7),
+    FOREIGN KEY (id_assunto_pai) REFERENCES tbl_assuntos(id)
+);
+
+-- Tabela tbl_atividades
+CREATE TABLE tbl_atividades (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    titulo VARCHAR(100) NOT NULL,
+    descricao TEXT NOT NULL,
+    serie_id int NOT NULL, -- Série escolar a que pertence
+    status_resposta boolean default false not null,
+    data_resposta TIMESTAMP NULL, -- Data e hora da resposta, se respondida
+    materia_id INT NOT NULL, -- Referência à matéria
+    assunto_id INT, -- Referência ao assunto principal da atividade
+    sub_assunto_id INT, -- Referência ao sub-assunto, se existir
+	foreign key (serie_id) references tbl_series(id),
+    FOREIGN KEY (materia_id) REFERENCES tbl_materias(id),
+    FOREIGN KEY (assunto_id) REFERENCES tbl_assuntos(id),
+    FOREIGN KEY (sub_assunto_id) REFERENCES tbl_assuntos(id)
+);
+
+CREATE TABLE tbl_atividade_alunos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    atividade_id INT NOT NULL, -- Referência à atividade
+    aluno_id INT NOT NULL, -- Referência ao usuário
+    status_resposta BOOLEAN DEFAULT FALSE NOT NULL, -- Status da atividade para o usuário
+    data_resposta TIMESTAMP NULL, -- Data e hora da resposta, se respondida
+    FOREIGN KEY (atividade_id) REFERENCES tbl_atividades(id) ON DELETE CASCADE,
+    FOREIGN KEY (aluno_id) REFERENCES tbl_alunos(id) ON DELETE CASCADE
+);
+
+-- Tabela tbl_atividade_questoes
+CREATE TABLE tbl_atividade_questoes (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    atividade_id INT NOT NULL, -- Referência à atividade
+    questao_id INT NOT NULL, -- Referência à questão
+    FOREIGN KEY (atividade_id) REFERENCES tbl_atividades(id) ON DELETE CASCADE,
+    FOREIGN KEY (questao_id) REFERENCES tbl_questao(id) ON DELETE CASCADE
+);
+
 -- INSERTS 
 
 
@@ -328,67 +381,64 @@ INSERT INTO tbl_imagens_grupo_mentoria (nome_imagem, caminho_imagem) VALUES
 ('Tucano', 'https://i.ibb.co/kxL92fX/image.png'),
 ('Onça', 'https://i.ibb.co/JRgDDhW/image.png');
 
+INSERT INTO tbl_series (nome, descricao)
+VALUES
+('1º Fund 1', 'Primeiro ano do ensino fundamental'),
+('2º Fund 1', 'Segundo ano do ensino fundamental'),
+('3º Fund 1', 'Terceiro ano do ensino fundamental'),
+('4º Fund 1', 'Quarto ano do ensino fundamental'),
+('5º Fund 1', 'Quinto ano do ensino fundamental'),
+('6º Fund 2', 'Sexto ano do ensino fundamental'),
+('7º Fund 2', 'Sétimo ano do ensino fundamental'),
+('8º Fund 2', 'Oitavo ano do ensino fundamental'),
+('9º Fund 2', 'Nono ano do ensino fundamental'),
+('1º EM', 'Primeiro ano do ensino médio'),
+('2º EM', 'Segundo ano do ensino médio'),
+('3º EM', 'Terceiro ano do ensino médio');
+
+
 
 
 INSERT INTO tbl_mentor (data_ingresso) VALUES
 (NOW());
 
-INSERT INTO tbl_mentor (data_ingresso) VALUES
-(NOW());
-
+-- Inserir dados na tabela tbl_materias
+INSERT INTO tbl_materias (nome_materia, imagem_materia) VALUES
+('Matemática', 'https://i.ibb.co/G7043ZC/calculator.png'),
+('Português', 'https://i.ibb.co/zFpV8Wv/library.png'),
+('História', 'https://i.ibb.co/cX9NFLz/history-book.png');
 
 -- Inserir dados na tabela tbl_grupo_mentoria
-INSERT INTO tbl_grupo_mentoria (nome, capacidade, descricao, imagem_id, materia, serie_min, serie_max, mentor_id) VALUES
-('Grupo A', 10, 'Descrição do Grupo A', 1, 'matemática', 1, 3, 1),
-('Grupo B', 10, 'Descrição do Grupo B', 2, 'matemática', 1, 3, 2);
+INSERT INTO tbl_grupo_mentoria (nome, capacidade, descricao, imagem_id, materia_id, serie_min, serie_max, mentor_id) VALUES
+('Grupo B', 10, 'Descrição do Grupo A', 1, 1, 1, 3, 1),
+('Grupo C', 10, 'Descrição do Grupo A', 1, 1, 1, 3, 1);
 
+desc tbl_grupo_mentoria;
 
 -- Inserir dados na tabela tbl_tipo_questao
 INSERT INTO tbl_tipo_questao (tipo_questao) VALUES
 ('Múltipla Escolha'),
 ('Verdadeiro ou Falso'),
-('Preenchimento de Lacunas');
+('Preenchimento de Lacunas'),
+('Correspondência');
 
 -- Inserir dados na tabela tbl_atividade_grupo_mentoria
 INSERT INTO tbl_atividade_grupo_mentoria (nome, descricao, grupo_mentoria_id) VALUES
 ('Atividade 1', 'Descrição da Atividade 1', 1);
 
--- Inserir dados na tabela tbl_questao
-INSERT INTO tbl_questao (enunciado, tipo_questao_id, imagem, atividade_grupo_mentoria_id) VALUES
-('Qual é a capital do Brasil?', 1, 'imagem1.jpg', 1),
-('O céu é azul?', 2, NULL, 1);
-
--- Inserir dados na tabela tbl_resposta_lacunas
-INSERT INTO tbl_resposta_lacunas (posicao_inicial, posicao_fim, questao_id, palavra) VALUES
-(0, 5, 1, 'Brasília');
-
--- Inserir dados na tabela tbl_resposta_verdadeiro_falso
-INSERT INTO tbl_resposta_verdadeiro_falso (autenticacao, questao_id, conteudo) VALUES
-(1, 2, 'Sim');
-
--- Inserir dados na tabela tbl_resposta_correspondencia
-INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_correspondente, questao_id) VALUES
-('Brasil', 'Brasília', 1);
-
--- Inserir dados na tabela tbl_resposta_multipla_escolha
-INSERT INTO tbl_resposta_multipla_escolha (conteudo, autenticacao, questao_id) VALUES
-('Brasília', 1, 1),
-('Rio de Janeiro', 0, 1);
-
--- Inserir dados na tabela tbl_ordem_palavra
-INSERT INTO tbl_ordem_palavra (posicao, questao_id, conteudo) VALUES
-(1, 1, 'Brasília');
-
--- Inserir dados na tabela tbl_materias
-INSERT INTO tbl_materias (nome_materia) VALUES
-('Matemática'),
-('Português'),
-('História');
-
 -- Inserir dados na tabela tbl_ranks
-INSERT INTO tbl_ranks (nome, nivel, num_salas) VALUES
-('Iniciante', 1, 5),
-('Intermediário', 2, 10);
+INSERT INTO tbl_ranks (nome, nivel, num_salas, imagem) VALUES
+('BronzeI', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-bronze-I.png'),
+('BronzeII', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-bronze-II.png'),
+('BronzeIII', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-bronze-III.png'),
+('PrataI', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-prata-I.png'),
+('PrataII', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-prata-II.png'),
+('PrataIII', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-prata-III.png'),
+('DiamanteI', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-diamante-I.png'),
+('DiamanteII', 1, 5, 'https://i.ibb.co/BKFcrCT/ranking-diamante-II.png'),
+('DiamanteIII', 2, 10, 'https://i.ibb.co/BKFcrCT/ranking-diamante-III.png');
+
+desc tbl_ranks;
 
 -- Inserir dados na tabela tbl_temporadas
 INSERT INTO tbl_temporadas (data_inicio, data_fim) VALUES
@@ -406,14 +456,10 @@ INSERT INTO tbl_professor (nome, email, senha, data_nascimento, telefone, imagem
 ('Professor 3', 'professor3@example.com', 'senha123', '1982-03-03', '1234567892', 3),
 ('Professor 50', 'professor50@example.com', 'senha123', '2029-02-19', '1234567839', 4);
 
-select * from tbl_alunos;
-desc tbl_grupo_mentoria;
-
 -- Inserir dados na tabela tbl_alunos
-INSERT INTO tbl_alunos (nome, email, senha, data_nascimento, telefone, serie,  pontos, id_rank, imagem_id) VALUES
-('Aluno 1', 'aluno1@example.com', 'senha123', '2005-01-01', '123456789', '1ª série', 0, 1, 1),
-('Aluno 2', 'aluno2@example.com', 'senha123', '2005-02-01', '987654321', '2ª série', 0, 1, 2),
-('Aluno 3', 'aluno3@example.com', 'senha123', '2005-02-01', '987654321', '2ª série', 0, 1, 1);
+INSERT INTO tbl_alunos (nome, email, senha, data_nascimento, telefone, serie_id,  pontos, id_rank, imagem_id) VALUES
+('Aluno 1', 'aluno1@example.com', 'senha123', '2005-01-01', '123456789', 9, 0, 1, 1),
+('Aluno 2', 'aluno2@example.com', 'senha456', '2005-02-01', '987654321', 9, 0, 1, 2);
 
 
 -- Inserir dados na tabela tbl_salas_alunos
@@ -432,7 +478,6 @@ INSERT INTO tbl_alunos_materias (aluno_id, materia_id) VALUES
 (1, 2),
 (2, 3);
 
-
 -- Inserir dados na tabela tbl_professor_materias
 INSERT INTO tbl_professor_materias (professor_id, materia_id) VALUES
 (1, 1),
@@ -440,8 +485,7 @@ INSERT INTO tbl_professor_materias (professor_id, materia_id) VALUES
 
 -- Inserir dados na tabela tbl_membros
 INSERT INTO tbl_membros (aluno_id, grupo_mentoria_id) VALUES
-(1, 1),
-(2, 1);
+(1, 1);
 
 -- Inserir dados na tabela tbl_duvida_compartilhada
 INSERT INTO tbl_duvida_compartilhada (conteudo, data_envio, membro_id, respondida) VALUES
@@ -457,8 +501,7 @@ INSERT INTO tbl_professor_mentor (professor_id, mentor_id) VALUES
 
 -- Inserir dados na tabela tbl_aluno_mentor
 INSERT INTO tbl_aluno_mentor (aluno_id, mentor_id) VALUES
-(2, 1),
-(3, 2);
+(2, 1);
 
 -- Inserir dados na tabela tbl_emblema
 INSERT INTO tbl_emblema (nome, descricao, icone) VALUES
@@ -477,6 +520,116 @@ INSERT INTO tbl_aluno_emblema (id_aluno, id_nivel_emblema, data_conquista) VALUE
 (1, 1, '2024-01-15'),
 (1, 2, '2024-02-10'),
 (2, 1, '2024-01-20');
+
+desc tbl_assuntos;
+-- Inserir assuntos
+INSERT INTO tbl_assuntos (nome, id_assunto_pai, cor) VALUES
+('Brasil', null, '#009900'),  -- 2 é o ID da matéria História
+('A Independência do Brasil', null, null),  -- 2 é o ID da matéria História
+('A Proclamação da República', null, null);    -- 2 é o ID da matéria História
+
+
+INSERT INTO tbl_atividades (titulo, descricao, serie_id, materia_id, assunto_id, sub_assunto_id)
+VALUES
+('A Independência do Brasil', 
+ 'Atividade sobre o processo de independência do Brasil e as figuras históricas envolvidas.',
+ 9, -- Série 9 (provavelmente Ensino Médio ou equivalente)
+ 3, -- História (ID da matéria História)
+ 1, -- Revolução e Independência (ID do assunto)
+ 2); -- Independência do Brasil (ID do sub-assunto)
+select * from tbl_assuntos;
+INSERT INTO tbl_atividades (titulo, descricao, serie_id, materia_id, assunto_id, sub_assunto_id)
+VALUES
+('A Proclamação da República', 
+ 'Atividade sobre a mudança do regime monárquico para o republicano no Brasil.',
+ 9, -- Série 9 (provavelmente Ensino Médio ou equivalente)
+ 3, -- História (ID da matéria História)
+ 1, -- Proclamação da República (ID do assunto)
+ 3); -- Proclamação da República do Brasil (ID do sub-assunto)
+
+-- Inserir questões para a atividade "A Independência do Brasil"
+INSERT INTO tbl_questao (enunciado, tipo_questao_id) VALUES
+('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1),  -- Múltipla Escolha
+('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2),  -- Verdadeiro ou Falso
+('A ________ proclamou a ________ em 1822, no ________.', 3),  -- Preenchimento de Lacunas
+('Combine os eventos históricos com suas respectivas datas.', 4);  -- Correspondência
+
+desc tbl_questao;
+-- Inserir questões para a atividade "A Proclamação da República"
+INSERT INTO tbl_questao (enunciado, tipo_questao_id) VALUES
+('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1),  -- Múltipla Escolha
+('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2),  -- Verdadeiro ou Falso
+('A ________ proclamou a ________ do ________ em 1889.', 3),  -- Preenchimento de Lacunas
+('Combine os acontecimentos históricos com as datas corretas.', 4);  -- Correspondência
+
+INSERT INTO tbl_questao (enunciado, tipo_questao_id) VALUES
+('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1),  -- Múltipla Escolha
+('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2),  -- Verdadeiro ou Falso
+('A ________ proclamou a ________ do ________ em 1889.', 3),  -- Preenchimento de Lacunas
+('Combine os acontecimentos históricos com as datas corretas.', 4);  -- Correspondência
+
+-- Inserir respostas para a Questão 1 de "A Independência do Brasil"
+INSERT INTO tbl_resposta_multipla_escolha (conteudo, autenticacao, questao_id) VALUES
+('Dom Pedro II', 0, 1), -- Errada
+('Dom João VI', 0, 1), -- Errada
+('Dom Pedro I', 1, 1), -- Correta
+('Tiradentes', 0, 1); -- Errada
+
+-- Inserir respostas para a Questão 1 de "A Proclamação da República"
+INSERT INTO tbl_resposta_multipla_escolha (conteudo, autenticacao, questao_id) VALUES
+('Getúlio Vargas', 0, 5), -- Errada
+('Marechal Deodoro da Fonseca', 1, 5), -- Correta
+('Dom Pedro II', 0, 5), -- Errada
+('Princesa Isabel', 0, 5); -- Errada
+
+-- Inserir respostas para a Questão 2 de "A Independência do Brasil"
+INSERT INTO tbl_resposta_verdadeiro_falso (autenticacao, questao_id, conteudo) VALUES
+(1, 2, 'Verdadeiro'); -- Correta
+
+-- Inserir respostas para a Questão 2 de "A Proclamação da República"
+INSERT INTO tbl_resposta_verdadeiro_falso (autenticacao, questao_id, conteudo) VALUES
+(1, 6, 'Verdadeiro'); -- Correta
+
+-- Inserir as respostas na tabela tbl_resposta_lacunas para a questão 3 (Atividade 1)
+INSERT INTO tbl_resposta_lacunas (posicao_inicial, posicao_fim, questao_id, palavra) VALUES
+(0, 12, 1, 'Dom Pedro I'),  -- Primeira lacuna: "Dom Pedro I"
+(14, 26, 1, 'Independência'),  -- Segunda lacuna: "Independência"
+(30, 35, 1, 'Brasil');  -- Terceira lacuna: "Brasil"
+
+-- Inserir as respostas na tabela tbl_resposta_lacunas para a questão 3 (Atividade 2)
+INSERT INTO tbl_resposta_lacunas (posicao_inicial, posicao_fim, questao_id, palavra) VALUES
+(0, 21, 2, 'Marechal Deodoro da Fonseca'),  -- Primeira lacuna: "Marechal Deodoro da Fonseca"
+(23, 32, 2, 'República'),  -- Segunda lacuna: "República"
+(36, 41, 2, 'Brasil');  -- Terceira lacuna: "Brasil"
+
+
+-- Inserir respostas para a Questão 4 de "A Independência do Brasil"
+INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_correspondente, questao_id) VALUES
+('Proclamação da Independência', '1822', 4),
+('Abolição da Escravatura', '1888', 4),
+('Proclamação da República', '1889', 4),
+('Inconfidência Mineira', '1789', 4);
+
+-- Inserir respostas para a Questão 4 de "A Proclamação da República"
+INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_correspondente, questao_id) VALUES
+('Proclamação da República', '1889', 8),
+('Revolução Farroupilha', '1835-1845', 8),
+('Guerra do Paraguai', '1864-1870', 8),
+('Revolta dos Malês', '1835', 8);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 INSERT INTO tbl_temporadas (data_inicio, data_fim)
@@ -542,6 +695,11 @@ WHERE
             FROM tbl_aluno_emblema
         )
     );
+    
+    SELECT COUNT(*) AS total 
+FROM grupo_usuario 
+WHERE usuario_id = 1 AND grupo_id = 1;
+
 
     drop view vw_emblemas_aluno;
     
