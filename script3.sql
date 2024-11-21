@@ -318,14 +318,21 @@ create table tbl_questao_atividade_grupo_mentoria (
    foreign key (atividade_grupo_mentoria_id) references tbl_atividade_grupo_mentoria(id)
 );
 
--- Tabela tbl_resposta_lacunas
-CREATE TABLE tbl_resposta_lacunas (
-    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    posicao_inicial INT NOT NULL,
-    posicao_fim INT NOT NULL,
-    questao_id INT NOT NULL,
-    palavra VARCHAR(45),
-    FOREIGN KEY (questao_id) REFERENCES tbl_questao(id)
+-- Tabela de lacunas
+CREATE TABLE lacunas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_questao INT NOT NULL,
+    posicao INT NOT NULL,
+    resposta_correta VARCHAR(255) NOT NULL,
+    FOREIGN KEY (id_questao) REFERENCES tbl_questao(id) ON DELETE CASCADE
+);
+
+-- Tabela de opções
+CREATE TABLE opcoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_questao INT NOT NULL,
+    texto_opcao VARCHAR(255) NOT NULL,
+    FOREIGN KEY (id_questao) REFERENCES tbl_questao(id) ON DELETE CASCADE
 );
 
 -- Tabela tbl_resposta_verdadeiro_falso
@@ -581,41 +588,43 @@ INSERT INTO tbl_atividades (titulo, descricao, sub_assunto_id) VALUES
 ('A Proclamação da República', 'Atividade sobre a mudança do regime monárquico para o republicano no Brasil.', 6);
 
 -- Inserção das Questões
+desc tbl_questao;
+select * from tbl_tipo_questao;
 INSERT INTO tbl_questao (enunciado, tipo_questao_id, imagem, atividade_id) VALUES
 -- Questões para as atividades de "Sub assunto 1"
 ('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1, null, 1),  
 ('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 1),  
-('O ________ proclamou a ________ em 1822, no ________.', 3, null, 1),
+('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 1),
 ('Combine os eventos históricos com suas respectivas datas.', 4, null, 1),
 
 -- Questões para a atividade "A Proclamação da República" (Sub Assunto 1)
 ('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1, null, 2),
 ('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2, null, 2),
-('O ________ proclamou a ________ do ________ em 1889.', 3, null, 2),
+('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 2),
 ('Combine os acontecimentos históricos com as datas corretas.', 4, null, 2),
 
 -- Questões para a atividade "Sub assunto 2"
 ('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1, null, 3),
 ('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 3),
-('O ________ proclamou a ________ em 1822, no ________.', 3, null, 3),
+('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 3),
 ('Combine os eventos históricos com suas respectivas datas.', 4, null, 3),
 
 -- Questões para a atividade "A Proclamação da República" (Sub Assunto 2)
 ('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1, null, 4),
 ('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2, null, 4),
-('O ________ proclamou a ________ do ________ em 1889.', 3, null, 4),
+('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 4),
 ('Combine os acontecimentos históricos com as datas corretas.', 4, null, 4),
 
 -- Questões para a atividade "Sub assunto 3"
 ('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1, null, 5),
 ('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 5),
-('O ________ proclamou a ________ em 1822, no ________.', 3, null, 5),
+('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 5),
 ('Combine os eventos históricos com suas respectivas datas.', 4, null, 5),
 
 -- Questões para a atividade "A Proclamação da República" (Sub Assunto 3)
 ('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1, null, 6),
 ('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2, null, 6),
-('O ________ proclamou a ________ do ________ em 1889.', 3, null, 6),
+('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 6),
 ('Combine os acontecimentos históricos com as datas corretas.', 4, null, 6);
 
 
@@ -659,17 +668,33 @@ INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_corre
 ('Guerra do Paraguai', '1864-1870', 8),
 ('Revolta dos Malês', '1835', 8);
 
--- Inserir as respostas na tabela tbl_resposta_lacunas para a questão 3 (Atividade 1)
-INSERT INTO tbl_resposta_lacunas (posicao_inicial, posicao_fim, questao_id, palavra) VALUES
-(0, 12, 3, 'Dom Pedro I'),  -- Primeira lacuna: "Dom Pedro I"
-(14, 26, 3, 'Independência'),  -- Segunda lacuna: "Independência"
-(30, 35, 3, 'Brasil');  -- Terceira lacuna: "Brasil"
+INSERT INTO lacunas (id_questao, posicao, resposta_correta) VALUES
+(3, 1, 'Dom Pedro I'),       -- Primeira lacuna
+(3, 2, 'Independência'),     -- Segunda lacuna
+(3, 3, 'Brasil');            -- Terceira lacuna
 
--- Inserir as respostas na tabela tbl_resposta_lacunas para a questão 3 (Atividade 2)
-INSERT INTO tbl_resposta_lacunas (posicao_inicial, posicao_fim, questao_id, palavra) VALUES
-(0, 21, 7, 'Marechal Deodoro da Fonseca'),  -- Primeira lacuna: "Marechal Deodoro da Fonseca"
-(23, 32, 7, 'República'),  -- Segunda lacuna: "República"
-(36, 41, 7, 'Brasil');  -- Terceira lacuna: "Brasil"
+INSERT INTO lacunas (id_questao, posicao, resposta_correta) VALUES
+(7, 1, 'Marechal Deodoro da Fonseca'),  -- Primeira lacuna
+(7, 2, 'República'),                   -- Segunda lacuna
+(7, 3, 'Brasil');                      -- Terceira lacuna
+
+-- Inserir as opções para a questão 7
+INSERT INTO opcoes (id_questao, texto_opcao) VALUES
+(7, 'Marechal Deodoro da Fonseca'),  -- Opção para a primeira lacuna
+(7, 'República'),                   -- Opção para a segunda lacuna
+(7, 'Brasil'),                      -- Opção para a terceira lacuna
+(7, 'Dom Pedro I'),                 -- Opção incorreta para a lacuna
+(7, 'Monarquia');                   -- Outra opção incorreta
+
+-- Inserir as opções para a questão 3
+INSERT INTO opcoes (id_questao, texto_opcao) VALUES
+(3, 'Dom Pedro I'),         -- Opção para a primeira lacuna
+(3, 'Independência'),       -- Opção para a segunda lacuna
+(3, 'Brasil'),              -- Opção para a terceira lacuna
+(3, 'Lua'),                 -- Opção para uma lacuna incorreta
+(3, 'Energia');             -- Outra opção incorreta
+
+
        
 	-- João ainda não respondeu a atividade 1
 -- INSERT INTO tbl_atividade_alunos (atividade_id, aluno_id)
@@ -678,6 +703,27 @@ INSERT INTO tbl_resposta_lacunas (posicao_inicial, posicao_fim, questao_id, pala
 -- Maria respondeu a atividade 1
 -- INSERT INTO tbl_atividade_alunos (atividade_id, aluno_id, status_resposta, data_resposta)
 -- VALUES (1, 2, TRUE, NOW());
+
+CREATE OR REPLACE VIEW vw_duvidas_por_grupo AS
+SELECT
+    dc.id AS id_duvida,
+    dc.conteudo AS conteudo_duvida,
+    dc.data_envio,
+    dc.respondida,
+    gm.id AS id_grupo_mentoria, -- substituindo por gm.id
+    a.nome AS nome_aluno
+FROM
+    tbl_duvida_compartilhada AS dc
+JOIN
+    tbl_membros AS m ON dc.membro_id = m.id
+JOIN
+    tbl_grupo_mentoria AS gm ON m.grupo_mentoria_id = gm.id
+JOIN
+    tbl_alunos AS a ON m.aluno_id = a.id
+ORDER BY
+    dc.data_envio DESC;
+    
+    
 
 SELECT 
     tbl_atividades.id AS id_atividade,
