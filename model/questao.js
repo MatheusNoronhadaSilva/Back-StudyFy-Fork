@@ -105,21 +105,20 @@ JOIN
 const selectQuestaoPorAtividade = async function(idAtividade) {
     try {
         let sql = `
-            SELECT 
-                tbl_questao.id AS questao_id,
-                tbl_questao.enunciado AS questao_pergunta,
-                tbl_questao.tipo_questao_id AS questao_tipo_id,
-                tbl_questao.imagem AS questao_imagem
-            FROM 
-                tbl_atividade_questoes
-            JOIN 
-                tbl_atividades ON tbl_atividade_questoes.atividade_id = tbl_atividades.id
-            JOIN 
-                tbl_questao ON tbl_atividade_questoes.questao_id = tbl_questao.id
-            WHERE 
-                tbl_atividades.id = ${idAtividade}
-            ORDER BY 
-                tbl_questao.id;
+SELECT 
+    tbl_questao.id AS questao_id,
+    tbl_questao.enunciado AS questao_pergunta,
+    tbl_questao.tipo_questao_id AS questao_tipo_id,
+    tbl_tipo_questao.tipo_questao AS tipo_questao_nome,  -- Nome do tipo da questão
+    tbl_questao.imagem AS questao_imagem
+FROM 
+    tbl_questao
+JOIN 
+    tbl_tipo_questao ON tbl_questao.tipo_questao_id = tbl_tipo_questao.id  -- Join com a tabela de tipos de questões
+WHERE 
+    tbl_questao.atividade_id = ${idAtividade}  -- Filtra pela atividade_id na tabela tbl_questao
+ORDER BY 
+    tbl_questao.id;
         `;
         let questoes = await prisma.$queryRawUnsafe(sql);
         return questoes;
@@ -188,35 +187,41 @@ const selectRespostasCorrespondencia = async function(questaoId) {
 const selectAtividadesByMateriaAndSerie = async function(materiaId, serieId) {
     try {
         let sql = `
-            SELECT 
-                atividade.id AS id_da_atividade,
-                atividade.titulo AS titulo_da_atividade,
-                atividade.descricao AS descricao_da_atividade,
-                assunto.id AS id_do_assunto,
-                assunto.nome AS nome_do_assunto,
-                assunto.cor AS cor_assunto,
-                sub_assunto.id AS id_do_sub_assunto,
-                sub_assunto.nome AS nome_do_sub_assunto,
-                materia.id AS id_da_materia,
-                materia.nome_materia AS nome_da_materia,
-                serie.id AS id_da_serie,
-                serie.nome AS nome_da_serie
-            FROM 
-                tbl_atividades atividade
-            JOIN 
-                tbl_assuntos assunto ON atividade.assunto_id = assunto.id
-            LEFT JOIN 
-                tbl_assuntos sub_assunto ON atividade.sub_assunto_id = sub_assunto.id
-            JOIN 
-                tbl_materias materia ON atividade.materia_id = materia.id
-            JOIN 
-                tbl_series serie ON atividade.serie_id = serie.id
-            WHERE 
-                atividade.materia_id = ${materiaId} 
-                AND atividade.serie_id = ${serieId}
+SELECT 
+    tbl_atividades.id AS id_da_atividade,
+    tbl_atividades.titulo AS titulo_da_atividade,
+    tbl_atividades.descricao AS descricao_da_atividade,
+    tbl_atividades.status_resposta AS status_da_resposta,
+    tbl_atividades.data_resposta AS data_da_resposta,
+    tbl_sub_assuntos.id AS id_do_sub_assunto,
+    tbl_sub_assuntos.nome AS nome_do_sub_assunto,
+    tbl_assuntos.id AS id_do_assunto,
+    tbl_assuntos.nome AS nome_do_assunto,
+    tbl_assuntos.cor AS cor_do_assunto,
+    tbl_materias.id AS id_da_materia,
+    tbl_materias.imagem_materia AS imagem_da_materia,
+    tbl_materias.nome_materia AS nome_da_materia,
+    tbl_series.id AS id_da_serie,
+    tbl_series.nome AS nome_da_serie
+FROM 
+    tbl_atividades
+JOIN 
+    tbl_sub_assuntos ON tbl_atividades.sub_assunto_id = tbl_sub_assuntos.id
+JOIN 
+    tbl_assuntos ON tbl_sub_assuntos.assunto_id = tbl_assuntos.id
+JOIN 
+    tbl_materias ON tbl_assuntos.materia_id = tbl_materias.id
+JOIN 
+    tbl_series ON tbl_assuntos.serie_id = tbl_series.id
+WHERE 
+    tbl_materias.id = ${materiaId}
+    AND tbl_series.id = ${serieId};
         `;
         
         let atividades = await prisma.$queryRawUnsafe(sql);
+
+        console.log(atividades);
+        
         return atividades;
     } catch (error) {
         console.error(error);
