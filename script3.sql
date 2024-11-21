@@ -319,7 +319,7 @@ create table tbl_questao_atividade_grupo_mentoria (
 );
 
 -- Tabela de lacunas
-CREATE TABLE lacunas (
+CREATE TABLE tbl_lacunas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_questao INT NOT NULL,
     posicao INT NOT NULL,
@@ -328,7 +328,7 @@ CREATE TABLE lacunas (
 );
 
 -- Tabela de opções
-CREATE TABLE opcoes (
+CREATE TABLE tbl_opcoes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_questao INT NOT NULL,
     texto_opcao VARCHAR(255) NOT NULL,
@@ -668,18 +668,18 @@ INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_corre
 ('Guerra do Paraguai', '1864-1870', 8),
 ('Revolta dos Malês', '1835', 8);
 
-INSERT INTO lacunas (id_questao, posicao, resposta_correta) VALUES
+INSERT INTO tbl_lacunas (id_questao, posicao, resposta_correta) VALUES
 (3, 1, 'Dom Pedro I'),       -- Primeira lacuna
 (3, 2, 'Independência'),     -- Segunda lacuna
 (3, 3, 'Brasil');            -- Terceira lacuna
 
-INSERT INTO lacunas (id_questao, posicao, resposta_correta) VALUES
+INSERT INTO tbl_lacunas (id_questao, posicao, resposta_correta) VALUES
 (7, 1, 'Marechal Deodoro da Fonseca'),  -- Primeira lacuna
 (7, 2, 'República'),                   -- Segunda lacuna
 (7, 3, 'Brasil');                      -- Terceira lacuna
 
 -- Inserir as opções para a questão 7
-INSERT INTO opcoes (id_questao, texto_opcao) VALUES
+INSERT INTO tbl_opcoes (id_questao, texto_opcao) VALUES
 (7, 'Marechal Deodoro da Fonseca'),  -- Opção para a primeira lacuna
 (7, 'República'),                   -- Opção para a segunda lacuna
 (7, 'Brasil'),                      -- Opção para a terceira lacuna
@@ -687,12 +687,32 @@ INSERT INTO opcoes (id_questao, texto_opcao) VALUES
 (7, 'Monarquia');                   -- Outra opção incorreta
 
 -- Inserir as opções para a questão 3
-INSERT INTO opcoes (id_questao, texto_opcao) VALUES
+INSERT INTO tbl_opcoes (id_questao, texto_opcao) VALUES
 (3, 'Dom Pedro I'),         -- Opção para a primeira lacuna
 (3, 'Independência'),       -- Opção para a segunda lacuna
 (3, 'Brasil'),              -- Opção para a terceira lacuna
 (3, 'Lua'),                 -- Opção para uma lacuna incorreta
 (3, 'Energia');             -- Outra opção incorreta
+
+
+desc tbl_questao;
+desc tbl_opcoes;
+SELECT 
+    tbl_questao.enunciado AS descricao_questao,
+    tbl_lacunas.posicao AS posicao_lacuna,
+    tbl_lacunas.resposta_correta AS resposta_correta_lacuna,
+    tbl_opcoes.texto_opcao AS texto_opcao_possivel
+FROM 
+    tbl_questao
+JOIN 
+    tbl_lacunas ON tbl_questao.id = tbl_lacunas.id_questao
+JOIN 
+    tbl_opcoes ON tbl_questao.id = tbl_opcoes.id_questao
+WHERE 
+    tbl_questao.id = 3
+ORDER BY 
+    tbl_lacunas.posicao, 
+    tbl_opcoes.texto_opcao;
 
 
        
