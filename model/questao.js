@@ -159,11 +159,52 @@ const selectRespostasVerdadeiroFalso = async function(questaoId) {
 const selectRespostasLacunas = async function(questaoId) {
     try {
         let sql = `
-            SELECT * 
-            FROM tbl_resposta_lacunas 
-            WHERE questao_id = ${questaoId};
+            SELECT 
+    tbl_lacunas.posicao AS posicao_lacuna,
+    tbl_lacunas.resposta_correta AS resposta_correta_lacuna,
+    tbl_opcoes.texto_opcao AS texto_opcao_possivel
+FROM 
+    tbl_questao
+JOIN 
+    tbl_lacunas ON tbl_questao.id = tbl_lacunas.id_questao
+JOIN 
+    tbl_opcoes ON tbl_questao.id = tbl_opcoes.id_questao
+WHERE 
+    tbl_questao.id = ${questaoId}
+ORDER BY 
+    tbl_lacunas.posicao, 
+    tbl_opcoes.texto_opcao;
         `;
-        return await prisma.$queryRawUnsafe(sql);
+
+
+        const result = await prisma.$queryRawUnsafe(sql);
+
+        const mapaAgrupado = {};
+        
+        // Percorre o resultado para organizar os dados
+        result.forEach(item => {
+          // Verifica se a lacuna já está no mapa
+          if (!mapaAgrupado[item.posicao_lacuna]) {
+            mapaAgrupado[item.posicao_lacuna] = {
+              posicao_lacuna: item.posicao_lacuna,
+              resposta_correta_lacuna: item.resposta_correta_lacuna,
+              opcoes_possiveis: []
+            };
+          }
+        
+          // Adiciona a opção à lista de opções possíveis (evitando duplicação)
+          if (!mapaAgrupado[item.posicao_lacuna].opcoes_possiveis.includes(item.texto_opcao_possivel)) {
+            mapaAgrupado[item.posicao_lacuna].opcoes_possiveis.push(item.texto_opcao_possivel);
+          }
+        });
+        
+        // Converte o mapa em um array, que será retornado como o agrupado
+        const agrupado = Object.values(mapaAgrupado);
+
+console.log(agrupado);
+
+
+        return agrupado
     } catch (error) {
         console.error('Erro ao buscar respostas de lacunas:', error);
         return null;
