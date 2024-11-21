@@ -28,6 +28,7 @@ const SUCCESS_DELETED_ITEM = {status: true, status_code: 200, message: 'Item exc
 
 const SUCCESS_UPDATED_ITEM = {status: true, status_code: 200, message: 'Item Atualizado com sucesso!!'}
 
+const SUCCESS_REQUEST = {status: true, status_code: 200, message: 'Coleta de dados com sucesso!!'}
 
 
 module.exports = {
@@ -41,5 +42,6 @@ SUCCESS_CREATED_ITEM,
 ERROR_CONTENT_TYPE,
 ERROR_INTERNAL_SERVER,
 SUCCESS_DELETED_ITEM,
-SUCCESS_UPDATED_ITEM
+SUCCESS_UPDATED_ITEM,
+SUCCESS_REQUEST
 }

@@ -214,10 +214,39 @@ const setAtualizarDuvida = async function(id, dadosDuvida, contentType) {
     }
 };
 
+// Função para buscar dúvidas por grupo de mentoria
+const getBuscarDuvidasPorGrupoMentoria = async function(grupoId) {
+    try {
+        if (!grupoId || isNaN(grupoId)) {
+            return message.ERROR_INVALID_ID; // 400
+        } else {
+            // Chama a função do DAO para buscar as dúvidas do grupo de mentoria
+            let dadosDuvidas = await duvidaCompartilhadaDAO.getDuvidasPorGrupoMentoria(grupoId);
+
+            if (dadosDuvidas) {
+                if (dadosDuvidas.length > 0) {
+                    return {
+                        duvidas: dadosDuvidas,
+                        status_code: 200,
+                    };
+                } else {
+                    return message.ERROR_NOT_FOUND; // 404, se não encontrar dúvidas
+                }
+            } else {
+                return message.ERROR_INTERNAL_SERVER_DB; // 500, erro na consulta
+            }
+        }
+    } catch (error) {
+        console.error(error);
+        return message.ERROR_INTERNAL_SERVER; // 500, erro interno
+    }
+};
+
 
 
 
 module.exports = {
+    getBuscarDuvidasPorGrupoMentoria,
     getListarAllDuvidas,
     getListarDuvidasRespondidas,
     getListarDuvidasNaoRespondidas,

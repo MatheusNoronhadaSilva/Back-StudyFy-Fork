@@ -50,7 +50,7 @@ const controllerEmblema = require ('./controller/controller_emblema.js')
 const controllerNivelEmblema = require ('./controller/controller_nivelEmblema.js')
 const controllerAlunoEmblema = require ('./controller/controller_alunoEmblema.js')
 const controllerImgsGrupoMentoria = require ('./controller/controller_imgsGrupoMentoria.js')
-
+const controllerCadernoVirtual = require ('./controller/controller_cadernoVirtual.js')
 
 /*******************************************************************************************************/
 
@@ -393,7 +393,7 @@ app.get('/v1/studyfy/gruposMentoria/:id', cors(), async function(request, respon
 
         console.log('yyyy');
 
-        let dadosBody = request.params.id;
+        let dadosBody = request.params.id;        
 
         console.log(dadosBody);
 
@@ -414,6 +414,7 @@ app.get('/v1/studyfy/grupoMentoriaAluno/:id', cors(), async function(request, re
     try {
         // Recebe todos os dados encaminhados na requisição pelo body
         let dadosBody = request.params.id;
+
         console.log(dadosBody);
         
         
@@ -585,6 +586,50 @@ app.get('/v1/studyfy/tipoQuestao/:id', cors(), async function(request, response)
         response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
     }
 });
+
+//pegar dados de uma atividade
+app.get('/v1/studyfy/atividades/:materiaId/:serieId', cors(), async function(request, response) {
+    try {
+        // Recebe os parâmetros da requisição
+        let materiaId = request.params.materiaId;
+        let serieId = request.params.serieId;
+        
+        // Valida os parâmetros
+        if (!materiaId || !serieId) {
+            return response.status(400).json({ status_code: 400, message: 'Parâmetros inválidos: materia_id e serie_id são obrigatórios' });
+        }
+
+        // Chama a controller para buscar as atividades
+        let dadosAtividades = await controllerQuestao.getBuscarAtividades(materiaId, serieId);
+
+        // Retorna a resposta
+        response.status(dadosAtividades.status_code);
+        response.json(dadosAtividades);
+    } catch (error) {
+        console.error('Erro ao buscar atividades:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
+
+app.get('/v1/studyfy/questoesPorAtividade/:atividade_id', cors(), async function(request, response) {
+    try {
+        // Recebe o ID da atividade (atividade_id) da requisição
+        let atividadeId = request.params.atividade_id;
+        
+        // Encaminha o atividadeId para a controller buscar as questões da atividade
+        let dadosQuestoes = await controllerQuestao.getBuscarQuestoesPorAtividade(atividadeId);
+        
+        response.status(dadosQuestoes.status_code);
+        response.json(dadosQuestoes);
+    } catch (error) {
+        console.error('Erro ao buscar questões da atividade:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
+
+
 
 // Endpoint: Insere um novo grupo de mentoria
 app.post('/v1/studyfy/tipoQuestao', cors(), bodyParserJSON, async function(request, response) {
@@ -763,6 +808,28 @@ app.delete('/v1/studyfy/duvidaCompartilhada/:id', cors(), async function(request
     }
 });
 
+// Endpoint: Buscar as dúvidas compartilhadas de um grupo de mentoria pelo ID
+app.get('/v1/studyfy/duvidaCompartilhada/grupo/:grupoId', cors(), async function(request, response) {
+    try {
+        // Pega o ID do grupo de mentoria da URL
+        const grupoId = parseInt(request.params.grupoId);
+
+        // Chama a função da controller para buscar as dúvidas do grupo de mentoria
+        const resultadoDuvidas = await controllerDuvidaCompartilhada.getBuscarDuvidasPorGrupoMentoria(grupoId);
+
+        // Verifica se encontrou as dúvidas
+        if (resultadoDuvidas.status_code === 404) {
+            return response.status(404).json({ message: 'Nenhuma dúvida encontrada para este grupo de mentoria.' });
+        }
+
+        // Retorna as dúvidas encontradas
+        response.status(resultadoDuvidas.status_code).json(resultadoDuvidas);
+    } catch (error) {
+        console.error('Erro ao buscar dúvidas do grupo de mentoria:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
 
 
 // --------------------   post para o login  --------------------- 
@@ -778,6 +845,8 @@ app.post('/v1/studyFy/login', cors(), bodyParserJSON, async function(request, re
     // Encaminha os dados para a controller realizar o login
     let resultadoLogin = await controllerAluno.loginUsuario(dadosBody.email, dadosBody.senha);
 
+    console.log('id');
+    
     console.log(resultadoLogin);
     response.status(resultadoLogin.status_code);
     response.json(resultadoLogin);
@@ -1533,6 +1602,54 @@ app.get('/v1/studyfy/imagens/grupo-mentoria', async (req, res) => {
         res.status(500).json({ error: 'Erro ao buscar imagens' });
     }
 });
+
+// --------------------   CRUD DE CADERNO VIRTUAL  --------------------- //
+
+app.post('/v1/studyFy/cadernoVirtual', cors(), bodyParserJSON, async function(request, response){
+
+    // Recebe o content-type da requisição
+    let contentType = request.headers['content-type']
+
+    //Recebe todos os dados encaminhados na requisição pelo Body
+    let dadosBody = request.body
+
+    //Encaminha os dados para a controller enviar para o DAO
+    let resultDadosNovoAluno = await controllerCadernoVirtual.setInserirNovaNota(dadosBody, contentType)
+    console.log(resultDadosNovoAluno);
+    response.status(resultDadosNovoAluno.status_code)
+    response.json(resultDadosNovoAluno)
+})
+
+app.get('/v1/studyFy/cadernoVirtual/:idAluno', cors(), async function(request, response) {
+
+    console.log('oiiioii');
+    
+    let idAluno = request.params.idAluno;
+
+    let resultDados = await controllerCadernoVirtual.getNotasAluno(idAluno);
+    response.status(resultDados.status_code);
+    response.json(resultDados);
+});
+
+app.delete('/v1/studyFy/cadernoVirtual/:idAluno/:idNota', cors(), async function(request, response) {
+    let idAluno = request.params.idAluno;
+    let idNota = request.params.idNota;
+
+    let resultDelete = await controllerCadernoVirtual.deleteNota(idAluno, idNota);
+    response.status(resultDelete.status_code);
+    response.json(resultDelete);
+});
+
+app.put('/v1/studyFy/cadernoVirtual/:idAluno/:idNota', cors(), bodyParserJSON, async function(request, response) {
+    let idAluno = request.params.idAluno;
+    let idNota = request.params.idNota;
+    let dadosBody = request.body;
+
+    let resultUpdate = await controllerCadernoVirtual.updateNota(idAluno, idNota, dadosBody);
+    response.status(resultUpdate.status_code);
+    response.json(resultUpdate);
+});
+
 
 
 

@@ -247,7 +247,7 @@ const getInformacoesTodosGruposMentoria = async (id) => {
 const getGruposMentoriasAluno = async (idAluno) => {
     try {
 
-            const resultado = await grupoMentoriaDAO.selectGruposAluno(idAluno);
+        const resultado = await grupoMentoriaDAO.selectGruposAluno(idAluno);
 
             if (!resultado || resultado.length === 0) {
                 return null; // Caso não encontre grupos de mentoria

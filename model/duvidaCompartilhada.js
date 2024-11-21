@@ -169,7 +169,35 @@ const deleteDuvidaCompartilhada = async function(id) {
     }
 }
 
+const getDuvidasPorGrupoMentoria = async function(grupoId) {
+    try {
+        // SQL para selecionar as dúvidas de um grupo de mentoria específico, incluindo o nome do aluno
+        let sql = `
+            SELECT
+                id_duvida,
+                conteudo_duvida,
+                data_envio,
+                respondida,
+                id_grupo_mentoria,
+                nome_aluno
+            FROM
+                vw_duvidas_por_grupo
+            WHERE
+                id_grupo_mentoria = ${grupoId}
+            ORDER BY
+                data_envio DESC;
+        `;
+        // Executa a consulta e retorna os resultados
+        const resultado = await prisma.$queryRawUnsafe(sql);
+        return resultado;
+    } catch (erro) {
+        console.error(erro);
+        throw new Error('Erro ao buscar as dúvidas do grupo de mentoria');
+    }
+};
+
 module.exports ={
+    getDuvidasPorGrupoMentoria,
     updateDuvidaCompartilhada,
     selectAllDuvidas,
     selectDuvidasNaoRespondidas,

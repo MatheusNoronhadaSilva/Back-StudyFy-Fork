@@ -154,10 +154,8 @@ const loginUsuario = async function(email, senha) {
             return { status_code: 400, message: 'Usuário não encontrado ou senha incorreta' };
         }
 
-        console.log(dadosUsuario);
-        
         // Se tudo estiver correto, retorna o usuário e uma mensagem de sucesso
-        usuarioJSON.usuario_id = dadosUsuario[0].id;
+        usuarioJSON.dadosUsuario = dadosUsuario[0];
         usuarioJSON.status_code = 200;
         usuarioJSON.message = 'Login bem-sucedido';
         return usuarioJSON;
