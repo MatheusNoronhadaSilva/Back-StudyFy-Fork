@@ -105,9 +105,72 @@ JOIN
         }
 }
 
+const insertMentor = async () => {
+    try {
+        let sql = `INSERT INTO tbl_mentor (data_ingresso) VALUES (NOW())`;
+        let resultado = await prisma.$executeRawUnsafe(sql);
+
+        console.log(resultado);
+        
+        
+        if (resultado) {
+            return resultado;  // Retorna o primeiro registro (o ID do mentor inserido)
+        }
+        return false;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
+
+const lastIDMentor = async () => {
+    try {
+        let sql = `SELECT id FROM tbl_mentor ORDER BY id DESC LIMIT 1;`;
+        let resultado = await prisma.$queryRawUnsafe(sql);
+        return resultado;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
+
+const adicionarAlunoAMentor = async (mentorId, alunoId) => {
+    try {
+        let sql = `
+            INSERT INTO tbl_aluno_mentor (aluno_id, mentor_id)
+            VALUES (${alunoId}, ${mentorId});
+        `;
+        await prisma.$queryRawUnsafe(sql);
+        return true;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
+
+const removerMentor = async function (mentorId) {
+    try {
+        const resultado = await prisma.$executeRawUnsafe(`
+            DELETE FROM tbl_mentor
+            WHERE id = ${parseInt(mentorId)};
+        `);
+
+        console.log(resultado);
+        
+        return resultado > 0; // Retorna true se o mentor foi removido
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+};
+
 
 
 module.exports ={
+    removerMentor,
+    insertMentor,
+    lastIDMentor,
+    adicionarAlunoAMentor,
    selectAllMentores,
    selectAlunoMentorById,
    selectProfessorMentorById

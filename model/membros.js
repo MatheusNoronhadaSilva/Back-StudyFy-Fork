@@ -64,9 +64,8 @@ WHERE
     grupo_mentoria.id IN (${id});
 `;
 
-        console.log(sql);
-
         let rsMateria = await prisma.$queryRawUnsafe(sql)
+        
         return rsMateria
 
     } catch (error) {

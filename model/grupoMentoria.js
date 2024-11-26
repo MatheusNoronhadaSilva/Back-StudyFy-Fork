@@ -269,7 +269,6 @@ LEFT JOIN
 LEFT JOIN 
     tbl_materias AS materias ON grupo_mentoria.materia_id = materias.id
 WHERE 
-    m.aluno_id = ${idAluno};
     membros.aluno_id = ${idAluno};
 `
     console.log(sql);

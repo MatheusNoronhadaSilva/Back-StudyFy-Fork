@@ -144,6 +144,25 @@ const getListarAluno = async function() {
     }
 };
 
+const getAlunoDetails = async (idAluno) => {
+    try {
+        // Chama o model para buscar os dados do aluno pelo ID
+        let alunoData = await alunoDAO.selectAlunoDetailsbyID(idAluno);
+
+        // Verifica se a consulta foi bem-sucedida
+        if (alunoData.status_code === 200) {
+            alunoData.aluno.data_criacao_conta = formatarData(alunoData.aluno.data_criacao_conta)
+            
+            return alunoData; // Retorna os dados do aluno com status 200
+        } else {
+            return alunoData; // Retorna erro, como aluno não encontrado ou erro no servidor
+        }
+    } catch (error) {
+        console.error("Erro ao buscar aluno:", error);
+        return { message: "Erro ao buscar aluno", status_code: 500 };
+    }
+};
+
 
 const loginUsuario = async function(email, senha) {
     try {
@@ -187,46 +206,26 @@ const loginUsuarioEmail = async function(email,id_aluno) {
     }
 };
 
-
-
-
 // Função para buscar aluno por ID
 const getBuscarAlunoId = async function(id) {
     try {
-        let idAluno = id;
-        let alunoJSON = {};
+        // Chama o model para buscar os dados do aluno pelo ID
+        let alunoData = await alunoDAO.selectAlunobyID(id);
 
-        if (idAluno === '' || idAluno === undefined || isNaN(idAluno)) {
-            return message.ERROR_INVALID_ID; // 400
+        // Verifica se a consulta foi bem-sucedida
+        if (alunoData.status_code === 200) {
+            alunoData.aluno.data_criacao_conta = formatarData(alunoData.aluno.data_criacao_conta)
+            
+            return alunoData; // Retorna os dados do aluno com status 200
         } else {
-            let dadosAlunos = await alunoDAO.selectAlunobyID(idAluno);
-
-            if (dadosAlunos) {
-                if (dadosAlunos.length > 0) {
-                    for (let i = 0; i < dadosAlunos.length; i++) {
-                        console.log(dadosAlunos[i]);
-
-                        let materiasAluno = await materiaDAO.selectMateriaByIdAluno(dadosAlunos[i].id);
-                        let listaMateriasAluno = materiasAluno;
-
-                        dadosAlunos[i].materias = listaMateriasAluno;
-                    }
-                    
-                    alunoJSON.aluno = dadosAlunos;
-                    alunoJSON.status_code = 200;
-
-                    return alunoJSON;
-                } else {
-                    return message.ERROR_NOT_FOUND;
-                }
-            } else {
-                return message.ERROR_INTERNAL_SERVER_DB;
-            }
+            return alunoData; // Retorna erro, como aluno não encontrado ou erro no servidor
         }
     } catch (error) {
-        return message.ERROR_INTERNAL_SERVER;
+        console.error("Erro ao buscar aluno:", error);
+        return { message: "Erro ao buscar aluno", status_code: 500 };
     }
 };
+
 
 // Atualizar a função de inserção de aluno para chamar a nova função
 const setInserirNovoAluno = async function(dadosAluno, contentType) {
@@ -463,6 +462,7 @@ const getSenhaDoUsuario = async function(id) {
 
 // Exporta as funções
 module.exports = {
+    getAlunoDetails,
     getListarAluno,
     getBuscarAlunoId,
     setInserirNovoAluno,

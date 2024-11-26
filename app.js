@@ -87,17 +87,34 @@ const bodyParserJSON = bodyParser.json()
    
 
     // // EndPoint: ele retorna os dados pelo id
-    app.get('/v1/studyFy/aluno/:id', cors(), async function(request, response){
+app.get('/v1/studyFy/aluno/:id', cors(), async function(request, response) {
+    // Recebe o ID da requisição
+    let idAluno = request.params.id;
 
-        // Recebe o id da requisição
-        let idAluno = request.params.id
-        // Encaminha o ID para a controller buscar o Filme
-        let dadosAluno = await controllerAluno.getBuscarAlunoId(idAluno)
+    // Encaminha o ID para o model buscar os dados do aluno
+    let dadosAluno = await controllerAluno.getBuscarAlunoId(idAluno);
 
-        
-        response.status(dadosAluno.status_code)
-        response.json(dadosAluno)
-    })
+    // Envia a resposta com o status e dados do aluno
+    response.status(dadosAluno.status_code).json(dadosAluno);
+});
+
+app.get('/v1/studyFy/aluno/config/:id', async function (request, response) {
+    const idAluno = request.params.id;  // Obtém o ID do aluno da URL
+    try {
+        // Chama o controlador para buscar os dados do aluno
+        const dadosAluno = await controllerAluno.getAlunoDetails(idAluno);
+
+        // Verifica se os dados foram encontrados e responde
+        if (dadosAluno) {
+            response.status(200).json(dadosAluno);
+        } else {
+            response.status(404).json({ message: 'Aluno não encontrado' });
+        }
+    } catch (error) {
+        response.status(500).json({ message: 'Erro interno no servidor' });
+    }
+});
+
 
     // //EndPoint: Ele insere dados sobre o filme
     app.post('/v1/studyFy/aluno', cors(), bodyParserJSON, async function(request, response){
@@ -299,6 +316,32 @@ const bodyParserJSON = bodyParser.json()
         response.status(dadosProfessoresMentores.status_code)
         response.json(dadosProfessoresMentores)
     })
+
+    app.post('/v1/studyFy/mentor', cors(), bodyParserJSON, async function(request, response) {
+        // Recebe o content-type da requisição
+        let contentType = request.headers['content-type'];
+    
+        // Recebe todos os dados encaminhados na requisição pelo Body
+        let dadosBody = request.body;
+    
+        // Encaminha os dados para a controller enviar para o DAO
+        let resultDadosNovoMentor = await controllerMentor.setInserirNovoMentor(dadosBody, contentType);
+        console.log(resultDadosNovoMentor);
+        response.status(resultDadosNovoMentor.status_code);
+        response.json(resultDadosNovoMentor);
+    });
+
+    app.delete('/v1/studyFy/mentor/:id', cors(), async function (request, response) {
+        // Recebe o parâmetro id da URL
+        let idMentor = request.params.id;
+    
+        // Encaminha o ID para a controller
+        let resultadoRemocaoMentor = await controllerMentor.setRemoverMentor(idMentor);
+    
+        response.status(resultadoRemocaoMentor.status_code);
+        response.json(resultadoRemocaoMentor);
+    });
+    
 
 
 

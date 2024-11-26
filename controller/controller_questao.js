@@ -117,12 +117,13 @@ const getBuscarQuestoesPorAtividade = async function(atividadeId) {
             let dadosQuestoes = await questaoDAO.selectQuestaoPorAtividade(idAtividade);
             if (dadosQuestoes && dadosQuestoes.length > 0) {
                 // Para cada questão retornada
-                console.log(dadosQuestoes);
+                console.log(dadosQuestoes);  
                 
                 for (let questao of dadosQuestoes) {
                     let respostas = await obterRespostasPorTipoQuestao(questao.questao_tipo_id, questao.questao_id);
                     
                     if (respostas) {
+                        
                         questao.respostas = respostas;  // Junta as respostas com os dados da questão
                     }
                     questoesJSON.push(questao);  // Adiciona a questão com as respostas ao array final
@@ -141,6 +142,9 @@ const getBuscarQuestoesPorAtividade = async function(atividadeId) {
 
 // Função que chama a model dependendo do tipo de questão
 const obterRespostasPorTipoQuestao = async function(tipoQuestaoId, questaoId) {
+
+    console.log(tipoQuestaoId);
+    
     switch (tipoQuestaoId) {
         case 1:
             return await questaoDAO.selectRespostasMultiplaEscolha(questaoId);

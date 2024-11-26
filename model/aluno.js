@@ -13,21 +13,56 @@ const prisma = new PrismaClient()
 
 const selectAlunobyID = async function(id){
     try {
-        // Realiza a busca do genero pelo ID
-        let sql = `select * from tbl_alunos where id = ${id}`;
+        // Realiza a consulta SQL com a junção das tabelas
+        let sql = `
+            SELECT 
+    ta.nome AS nome_aluno,
+    iu.caminho_imagem AS foto_aluno,  -- Caminho da foto do aluno
+    ta.data_criacao AS data_criacao_conta,
+    GROUP_CONCAT(m.nome_materia SEPARATOR ', ') AS materias_associadas,
+    CASE 
+        WHEN am.aluno_id IS NOT NULL THEN 'Aluno/Mentor'
+        WHEN mnt.id IS NOT NULL THEN 'Aluno/Mentor'
+        ELSE 'Aluno'
+    END AS tipo_aluno,
+    ts.nome AS nome_serie,  -- Nome da série com base no serie_id
+    ta.pontos
+FROM 
+    tbl_alunos ta
+LEFT JOIN 
+    tbl_alunos_materias tam ON ta.id = tam.aluno_id
+LEFT JOIN 
+    tbl_materias m ON tam.materia_id = m.id
+LEFT JOIN 
+    tbl_aluno_mentor am ON ta.id = am.aluno_id  -- Verifica se o aluno é um mentor
+LEFT JOIN 
+    tbl_mentor mnt ON ta.id = mnt.id  -- Verifica se o aluno está na tabela de mentores
+LEFT JOIN 
+    tbl_imagens_usuario iu ON ta.imagem_id = iu.id  -- Traz o caminho da imagem do aluno
+LEFT JOIN 
+    tbl_series ts ON ta.serie_id = ts.id  -- Traz o nome da série com base no serie_id
+WHERE 
+    ta.id = ${id}  -- Substitua "1" pelo ID do aluno desejado
+GROUP BY 
+    ta.id;
+        `;
+        
+        // Executa o SQL no banco de dados
+        let rsAluno = await prisma.$queryRawUnsafe(sql);
 
-        // Executa no banco de dados o script sql
-        let rsAluno= await prisma.$queryRawUnsafe(sql);
-
-            return rsAluno;
-    
-        } catch (error) {
-            console.log(error);
-            return false;
-            
+        // Se a consulta retornar resultados, retornamos os dados do aluno
+        if (rsAluno && rsAluno.length > 0) {
+            return { aluno: rsAluno[0], status_code: 200 };
+        } else {
+            return { message: "Aluno não encontrado", status_code: 404 };
         }
         
-}
+    } catch (error) {
+        console.log(error);
+        return { message: "Erro interno no servidor", status_code: 500 };
+    }
+};
+
 
 const selectAllAlunos = async function(){
     try {
@@ -420,9 +455,43 @@ const selectSenhaById = async function(id) {
     }
 };
 
+const selectAlunoDetailsbyID = async function(id) {
+    try {
+        // Realiza a consulta SQL para pegar nome, email, senha, foto e data de criação do aluno
+        let sql = `
+            SELECT 
+                ta.nome AS nome_aluno,
+                ta.email AS email_aluno,
+                ta.senha AS senha_aluno,
+                iu.caminho_imagem AS foto_aluno,  -- Caminho da foto do aluno
+                ta.data_criacao AS data_criacao_conta
+            FROM 
+                tbl_alunos ta
+            LEFT JOIN 
+                tbl_imagens_usuario iu ON ta.imagem_id = iu.id  -- Traz o caminho da imagem do aluno
+            WHERE 
+                ta.id = ${id};  -- Substitua "id" pelo ID do aluno desejado
+        `;
+        
+        // Executa o SQL no banco de dados
+        let rsAluno = await prisma.$queryRawUnsafe(sql);
+
+        // Se a consulta retornar resultados, retornamos os dados do aluno
+        if (rsAluno && rsAluno.length > 0) {
+            return { aluno: rsAluno[0], status_code: 200 };
+        } else {
+            return { message: "Aluno não encontrado", status_code: 404 };
+        }
+        
+    } catch (error) {
+        console.log(error);
+        return { message: "Erro interno no servidor", status_code: 500 };
+    }
+};
 
 
 module.exports ={
+    selectAlunoDetailsbyID,
     adicionarAlunoASala,
     selectAllAlunos,
     selectAlunobyID,

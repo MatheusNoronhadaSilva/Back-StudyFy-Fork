@@ -218,7 +218,16 @@ const selectRespostasCorrespondencia = async function(questaoId) {
             FROM tbl_resposta_correspondencia 
             WHERE questao_id = ${questaoId};
         `;
-        return await prisma.$queryRawUnsafe(sql);
+
+        console.log(sql);
+        
+
+        const resultado = await prisma.$queryRawUnsafe(sql);
+
+        console.log(resultado);
+        console.log('id do grupo:', JSON.stringify(resultado, null, 2));
+        
+        return resultado
     } catch (error) {
         console.error('Erro ao buscar respostas de correspondência:', error);
         return null;

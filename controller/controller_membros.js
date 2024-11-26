@@ -43,13 +43,20 @@ const getBuscarMembroId = async function(id) {
             return message.ERROR_INVALID_ID; // 400
         } else {
             let dadosMembros = await membrosDAO.selectByIdMembro(idMembros);
+
+            console.log('oioii' + dadosMembros);
+            
             if (dadosMembros) {
                 if (dadosMembros.length > 0) {
                     grupoMembrosJSON.grupo = dadosMembros;
                     grupoMembrosJSON.status_code = 200;
                     return grupoMembrosJSON;
                 } else {
-                    return message.ERROR_NOT_FOUND; // 404
+
+                    grupoMembrosJSON.grupo = dadosMembros = null;
+                    grupoMembrosJSON.status_code = 200;
+                    return grupoMembrosJSON;
+
                 }
             } else {
                 return message.ERROR_INTERNAL_SERVER_DB; // 500
