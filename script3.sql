@@ -53,7 +53,7 @@ CREATE TABLE tbl_grupo_mentoria (
     foreign key (serie_min) references tbl_series(id),
 	foreign key (serie_max) references tbl_series(id),
     FOREIGN KEY (imagem_id) REFERENCES tbl_imagens_grupo_mentoria(id),
-    FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id)
+    FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id) ON DELETE CASCADE
 );
 
 -- Tabela tbl_atividade_grupo_mentoria
@@ -62,7 +62,7 @@ CREATE TABLE tbl_atividade_grupo_mentoria (
     nome VARCHAR(100) NOT NULL,
     descricao TINYTEXT NOT NULL,
     grupo_mentoria_id INT NOT NULL,
-    FOREIGN KEY (grupo_mentoria_id) REFERENCES tbl_grupo_mentoria(id)
+    FOREIGN KEY (grupo_mentoria_id) REFERENCES tbl_grupo_mentoria(id) ON DELETE CASCADE
 );
 
 
@@ -108,6 +108,7 @@ CREATE TABLE tbl_alunos (
     senha VARCHAR(25) NOT NULL,
     data_nascimento DATE NOT NULL,
     telefone VARCHAR(20) NOT NULL,
+    data_criacao DATE DEFAULT (CURDATE()) NOT NULL,
     serie_id int NOT NULL,
     imagem_id INT, -- ID da imagem do usuário
     pontos INT DEFAULT 0,
@@ -162,6 +163,7 @@ CREATE TABLE tbl_professor (
     senha VARCHAR(25) NOT NULL,
     data_nascimento DATE NOT NULL,
     telefone VARCHAR(20) NOT NULL,
+    data_criacao DATE DEFAULT (CURDATE()) NOT NULL,
     imagem_id int,
     FOREIGN KEY (imagem_id) REFERENCES tbl_imagens_usuario(id)
 );
@@ -181,7 +183,7 @@ CREATE TABLE tbl_membros (
     aluno_id INT NOT NULL,
     grupo_mentoria_id INT NOT NULL,
     FOREIGN KEY (aluno_id) REFERENCES tbl_alunos(id),
-    FOREIGN KEY (grupo_mentoria_id) REFERENCES tbl_grupo_mentoria(id)
+    FOREIGN KEY (grupo_mentoria_id) REFERENCES tbl_grupo_mentoria(id) ON DELETE CASCADE
 );
 
 -- Tabela tbl_duvida_compartilhada
@@ -191,7 +193,7 @@ CREATE TABLE tbl_duvida_compartilhada (
     data_envio VARCHAR(45),
     membro_id INT NOT NULL,
     respondida boolean default false,
-    FOREIGN KEY (membro_id) REFERENCES tbl_membros(id)
+    FOREIGN KEY (membro_id) REFERENCES tbl_membros(id) ON DELETE CASCADE
 );
 
 
@@ -202,7 +204,7 @@ CREATE TABLE tbl_resposta_duvida (
     data_resposta VARCHAR(45),
     duvida_compartilhada_id INT NOT NULL,
     mentor_id INT NOT NULL,
-    FOREIGN KEY (duvida_compartilhada_id) REFERENCES tbl_duvida_compartilhada(id),
+    FOREIGN KEY (duvida_compartilhada_id) REFERENCES tbl_duvida_compartilhada(id) ON DELETE CASCADE,
     FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id)
 );
 
@@ -214,7 +216,7 @@ CREATE TABLE tbl_professor_mentor (
     professor_id INT NOT NULL,
     mentor_id INT NOT NULL,
     FOREIGN KEY (professor_id) REFERENCES tbl_professor(id),
-    FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id)
+    FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id) ON DELETE CASCADE
 );
 
 -- Tabela tbl_aluno_mentor
@@ -223,7 +225,7 @@ CREATE TABLE tbl_aluno_mentor (
     aluno_id INT NOT NULL,
     mentor_id INT NOT NULL,
     FOREIGN KEY (aluno_id) REFERENCES tbl_alunos(id),
-    FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id)
+    FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id) ON DELETE CASCADE
 );
 
 
@@ -418,7 +420,6 @@ VALUES
 ('2º EM', 'Segundo ano do ensino médio'),
 ('3º EM', 'Terceiro ano do ensino médio');
 
-
 INSERT INTO tbl_grupo_mentoria (nome, capacidade, descricao, imagem_id, materia_id, serie_min, serie_max, mentor_id) VALUES
 ('Grupo A', 10, 'Descrição do Grupo A', 1, 1, 1, 3, 1),
 ('Grupo B', 10, 'Descrição do Grupo B', 2, 1, 1, 3, 2);
@@ -590,41 +591,43 @@ INSERT INTO tbl_atividades (titulo, descricao, sub_assunto_id) VALUES
 -- Inserção das Questões
 desc tbl_questao;
 select * from tbl_tipo_questao;
+
+
 INSERT INTO tbl_questao (enunciado, tipo_questao_id, imagem, atividade_id) VALUES
 -- Questões para as atividades de "Sub assunto 1"
 ('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1, null, 1),  
-('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 1),  
-('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 1),
+('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 1), 
+-- ('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 1),
 ('Combine os eventos históricos com suas respectivas datas.', 4, null, 1),
 
 -- Questões para a atividade "A Proclamação da República" (Sub Assunto 1)
 ('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1, null, 2),
 ('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2, null, 2),
-('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 2),
+-- ('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 2),
 ('Combine os acontecimentos históricos com as datas corretas.', 4, null, 2),
 
 -- Questões para a atividade "Sub assunto 2"
 ('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1, null, 3),
 ('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 3),
-('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 3),
+-- ('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 3),
 ('Combine os eventos históricos com suas respectivas datas.', 4, null, 3),
 
 -- Questões para a atividade "A Proclamação da República" (Sub Assunto 2)
 ('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1, null, 4),
 ('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2, null, 4),
-('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 4),
+-- ('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 4),
 ('Combine os acontecimentos históricos com as datas corretas.', 4, null, 4),
 
 -- Questões para a atividade "Sub assunto 3"
 ('Quem foi o responsável pela proclamação da Independência do Brasil em 1822?', 1, null, 5),
 ('A Independência do Brasil foi proclamada em 7 de setembro de 1822.', 2, null, 5),
-('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 5),
+-- ('O [gap1] proclamou a [gap2] em 1822, no [gap3].', 3, null, 5),
 ('Combine os eventos históricos com suas respectivas datas.', 4, null, 5),
 
 -- Questões para a atividade "A Proclamação da República" (Sub Assunto 3)
 ('Quem foi o responsável pela Proclamação da República no Brasil em 1889?', 1, null, 6),
 ('A Proclamação da República aconteceu no dia 15 de novembro de 1889.', 2, null, 6),
-('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 6),
+-- ('O [gap1] proclamou a [gap2] do [gap3] em 1889.', 3, null, 6),
 ('Combine os acontecimentos históricos com as datas corretas.', 4, null, 6);
 
 
@@ -653,13 +656,13 @@ INSERT INTO tbl_resposta_verdadeiro_falso (autenticacao, questao_id, conteudo) V
 (1, 6, 'Verdadeiro'), -- Correta
 (0, 6, 'Falso'); 
 
-
 -- Inserir respostas para a Questão 4 de "A Independência do Brasil"
 INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_correspondente, questao_id) VALUES
-('Proclamação da Independência', '1822', 4),
-('Abolição da Escravatura', '1888', 4),
-('Proclamação da República', '1889', 4),
-('Inconfidência Mineira', '1789', 4);
+('Proclamação da Independência', '1822', 3),
+('Abolição da Escravatura', '1888', 3),
+('Proclamação da República', '1889', 3),
+('Inconfidência Mineira', '1789', 3);
+
 
 -- Inserir respostas para a Questão 4 de "A Proclamação da República"
 INSERT INTO tbl_resposta_correspondencia (palavra_correspondente, resposta_correspondente, questao_id) VALUES
