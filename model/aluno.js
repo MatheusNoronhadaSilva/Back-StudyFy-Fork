@@ -22,7 +22,6 @@ const selectAlunobyID = async function(id){
     GROUP_CONCAT(m.nome_materia SEPARATOR ', ') AS materias_associadas,
     CASE 
         WHEN am.aluno_id IS NOT NULL THEN 'Aluno/Mentor'
-        WHEN mnt.id IS NOT NULL THEN 'Aluno/Mentor'
         ELSE 'Aluno'
     END AS tipo_aluno,
     ts.nome AS nome_serie,  -- Nome da série com base no serie_id

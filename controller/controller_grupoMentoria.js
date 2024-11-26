@@ -115,17 +115,16 @@ const setInserirNovoGrupoMentoria = async function(dadosGrupoMentoria, contentTy
             let grupoMentoriaJSON = {};
 
             // Validação de campos obrigatórios ou com digitação inválida
-            if (dadosGrupoMentoria.nome === '' || dadosGrupoMentoria.nome === undefined || dadosGrupoMentoria.nome === null || dadosGrupoMentoria.nome.length > 255 ||
-                dadosGrupoMentoria.capacidade === '' || dadosGrupoMentoria.capacidade === undefined || dadosGrupoMentoria.capacidade === null ||
-                dadosGrupoMentoria.descricao === '' || dadosGrupoMentoria.descricao === undefined || dadosGrupoMentoria.descricao === null || dadosGrupoMentoria.descricao.length > 255 ||
-                dadosGrupoMentoria.foto_perfil === '' || dadosGrupoMentoria.foto_perfil === undefined || dadosGrupoMentoria.foto_perfil === null || dadosGrupoMentoria.foto_perfil.length > 255 ||
-                dadosGrupoMentoria.materia === '' || dadosGrupoMentoria.materia === undefined || dadosGrupoMentoria.materia === null || dadosGrupoMentoria.materia.length > 256 ||
-                dadosGrupoMentoria.serie_min === '' || dadosGrupoMentoria.serie_min === undefined || dadosGrupoMentoria.serie_min === null || 
-                dadosGrupoMentoria.serie_max === '' || dadosGrupoMentoria.serie_max === undefined || dadosGrupoMentoria.serie_max === null ||
-                dadosGrupoMentoria.chat_aberto === '' || dadosGrupoMentoria.chat_aberto === undefined || dadosGrupoMentoria.chat_aberto === null ||
-                dadosGrupoMentoria.data_criacao === '' || dadosGrupoMentoria.data_criacao === undefined || dadosGrupoMentoria.data_criacao === null ||
-                !isValidDate(dadosGrupoMentoria.data_criacao) ||
-                dadosGrupoMentoria.mentor_id === '' || dadosGrupoMentoria.mentor_id === undefined || dadosGrupoMentoria.mentor_id === null
+            if (
+                !dadosGrupoMentoria.nome || dadosGrupoMentoria.nome.length > 50 || // nome deve ser preenchido e ter no máximo 50 caracteres
+                !Number.isInteger(dadosGrupoMentoria.capacidade) || dadosGrupoMentoria.capacidade <= 0 || // capacidade deve ser um número inteiro positivo
+                (dadosGrupoMentoria.descricao && dadosGrupoMentoria.descricao.length > 255) || // descrição é opcional, mas não pode ter mais que 255 caracteres
+                !dadosGrupoMentoria.materia || typeof dadosGrupoMentoria.materia !== "number" || // matéria deve ser preenchida e ser um número
+                !Number.isInteger(dadosGrupoMentoria.serie_min) || dadosGrupoMentoria.serie_min <= 0 || // série mínima deve ser um número inteiro positivo
+                !Number.isInteger(dadosGrupoMentoria.serie_max) || dadosGrupoMentoria.serie_max <= 0 || dadosGrupoMentoria.serie_min > dadosGrupoMentoria.serie_max || // série máxima também deve ser válida e maior ou igual à mínima
+                (dadosGrupoMentoria.foto_perfil && dadosGrupoMentoria.foto_perfil.length > 255) || // foto_perfil é opcional, mas não pode ter mais que 255 caracteres
+                (dadosGrupoMentoria.data_criacao && !isValidDate(dadosGrupoMentoria.data_criacao)) || // validação de data_criacao, se fornecida
+                !Number.isInteger(dadosGrupoMentoria.mentor_id) || dadosGrupoMentoria.mentor_id <= 0 // mentor_id deve ser um número inteiro positivo
             ) {
                 return message.ERROR_REQUIRED_FIELDS;
             } else {

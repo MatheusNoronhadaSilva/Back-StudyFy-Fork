@@ -51,7 +51,7 @@ const controllerNivelEmblema = require ('./controller/controller_nivelEmblema.js
 const controllerAlunoEmblema = require ('./controller/controller_alunoEmblema.js')
 const controllerImgsGrupoMentoria = require ('./controller/controller_imgsGrupoMentoria.js')
 const controllerCadernoVirtual = require ('./controller/controller_cadernoVirtual.js')
-
+const controllerSeries = require('./controller/controller_series')
 /*******************************************************************************************************/
 
 // Criando um objeto para controlar a chegada dos dados da requisição em formato JSON
@@ -343,7 +343,22 @@ app.get('/v1/studyFy/aluno/config/:id', async function (request, response) {
     });
     
 
+// --------------------   CRUD DE SERIES ----------------------------
 
+app.get('/v1/studyfy/series', cors(), async function(request, response){
+
+    try {
+        // Chama a função da controller para retornar todos os grupos de mentoria
+        let dadosSeries = await controllerSeries.getSeries();
+        
+        // Validação para verificar se existem dados a serem retornados
+        response.status(dadosSeries.status_code);
+        response.json(dadosSeries);
+    } catch (error) {
+        console.error('Erro ao listar series:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+})
 
 // --------------------   CRUD GRUPO DE DE MENTORIA  ---------------------        
 
