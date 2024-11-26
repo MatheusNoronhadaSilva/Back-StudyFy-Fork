@@ -95,29 +95,25 @@ const selectAllGruposMentoria = async function() {
 const insertGrupoMentoria = async function(dadosGrupoMentoria) {
     try {
         let sql = `INSERT INTO tbl_grupo_mentoria (
-                        nome,
-                        capacidade,
-                        descricao,
-                        foto_perfil,
-                        materia,
-                        serie_min,
-                        serie_max,
-                        chat_aberto,
-                        data_criacao,
-                        mentor_id
-                    ) 
-                    VALUES (
+        nome, 
+        capacidade, 
+        descricao, 
+        imagem_id, 
+        materia_id, 
+        serie_min, 
+        serie_max, 
+        mentor_id
+        ) 
+        VALUES (
                         '${dadosGrupoMentoria.nome}',
-                        ${dadosGrupoMentoria.capacidade},
+                         ${dadosGrupoMentoria.capacidade},
                         '${dadosGrupoMentoria.descricao}',
-                        '${dadosGrupoMentoria.foto_perfil}',
-                        '${dadosGrupoMentoria.materia}',
-                        ${dadosGrupoMentoria.serie_min},
-                        ${dadosGrupoMentoria.serie_max},
-                        ${dadosGrupoMentoria.chat_aberto},
-                        '${dadosGrupoMentoria.data_criacao}',
-                        ${dadosGrupoMentoria.mentor_id}
-                    )`;
+                         ${dadosGrupoMentoria.imagem_id},
+                         ${dadosGrupoMentoria.materia},
+                         ${dadosGrupoMentoria.serie_min},
+                         ${dadosGrupoMentoria.serie_max},
+                         ${dadosGrupoMentoria.mentor_id}
+        );`
 
         // Executa o SQL para inserir o grupo de mentoria
         let result = await prisma.$executeRawUnsafe(sql);

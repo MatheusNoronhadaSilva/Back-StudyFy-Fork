@@ -112,6 +112,9 @@ const getBuscarGrupoMentoriaId = async function(id) {
 const setInserirNovoGrupoMentoria = async function(dadosGrupoMentoria, contentType) {
     try {
         if (String(contentType).toLowerCase() === 'application/json') {
+
+            console.log('gdgdgdgdgdg');
+            
             let grupoMentoriaJSON = {};
 
             // Validação de campos obrigatórios ou com digitação inválida

@@ -103,11 +103,11 @@ CREATE TABLE tbl_salas (
 -- Tabela tbl_alunos
 CREATE TABLE tbl_alunos (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    nome VARCHAR(90),
-    email VARCHAR(256),
+    nome VARCHAR(90) unique,
+    email VARCHAR(256) unique,
     senha VARCHAR(25) NOT NULL,
     data_nascimento DATE NOT NULL,
-    telefone VARCHAR(20) NOT NULL,
+    telefone VARCHAR(20) NOT NULL unique,
     data_criacao DATE DEFAULT (CURDATE()) NOT NULL,
     serie_id int NOT NULL,
     imagem_id INT, -- ID da imagem do usuário
@@ -158,11 +158,11 @@ CREATE TABLE tbl_alunos_materias (
 -- Tabela tbl_professor
 CREATE TABLE tbl_professor (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
-    nome VARCHAR(90),
-    email VARCHAR(256),
+    nome VARCHAR(90) unique,
+    email VARCHAR(256) unique,
     senha VARCHAR(25) NOT NULL,
     data_nascimento DATE NOT NULL,
-    telefone VARCHAR(20) NOT NULL,
+    telefone VARCHAR(20) NOT NULL unique,
     data_criacao DATE DEFAULT (CURDATE()) NOT NULL,
     imagem_id int,
     FOREIGN KEY (imagem_id) REFERENCES tbl_imagens_usuario(id)
@@ -397,6 +397,9 @@ INSERT INTO tbl_mentor (data_ingresso) VALUES
 INSERT INTO tbl_mentor (data_ingresso) VALUES
 (NOW());
 
+INSERT INTO tbl_mentor (data_ingresso) VALUES
+(NOW());
+
 -- Inserir dados na tabela tbl_grupo_mentoriaf
 
 -- Inserir dados na tabela tbl_materias
@@ -424,6 +427,9 @@ INSERT INTO tbl_grupo_mentoria (nome, capacidade, descricao, imagem_id, materia_
 ('Grupo A', 10, 'Descrição do Grupo A', 1, 1, 1, 3, 1),
 ('Grupo B', 10, 'Descrição do Grupo B', 2, 1, 1, 3, 2);
 
+select * from tbl_grupo_mentoria;
+
+select * from tbl_mentor;
 -- Inserir dados na tabela tbl_tipo_questao
 INSERT INTO tbl_tipo_questao (tipo_questao) VALUES
 ('Múltipla Escolha'),
@@ -468,7 +474,11 @@ INSERT INTO tbl_professor (nome, email, senha, data_nascimento, telefone, imagem
 INSERT INTO tbl_alunos (nome, email, senha, data_nascimento, telefone, serie_id,  pontos, id_rank, imagem_id) VALUES
 ('Aluno 1', 'aluno1@example.com', 'senha123', '2005-01-01', '123456789', 8, 0, 1, 1),
 ('Aluno 2', 'aluno2@example.com', 'senha123', '2005-02-01', '987654321', 11, 0, 1, 2),
-('Aluno 3', 'aluno3@example.com', 'senha123', '2005-02-01', '987654321', 5, 0, 1, 1);
+('Aluno 3', 'aluno3@example.com', 'senha123', '2005-02-01', '987654323', 5, 0, 1, 1),
+('Aluno 4', 'aluno4@example.com', 'senha123', '2005-02-01', '987655453', 6, 0, 1, 2),
+('Aluno 5', 'aluno5@example.com', 'senha123', '2005-02-01', '987657869', 3, 0, 1, 2),
+('Aluno 6', 'aluno6@example.com', 'senha123', '2005-02-01', '987624791', 9, 0, 1, 2),
+('Aluno 7', 'aluno7@example.com', 'senha123', '2005-02-01', '987652222', 2, 0, 1, 1);
 
 INSERT INTO caderno_virtual (conteudo, id_aluno) 
 VALUES 
@@ -486,11 +496,17 @@ INSERT INTO tbl_alunos_ranks (aluno_id, rank_id, pontos_rank) VALUES
 (1, 1, 10),
 (2, 1, 20);
 
+select * from tbl_alunos;
 -- Inserir dados na tabela tbl_alunos_materias
 INSERT INTO tbl_alunos_materias (aluno_id, materia_id) VALUES
 (1, 1),
 (1, 2),
-(2, 3);
+(2, 2),
+(3, 1),
+(4, 1),
+(5, 2),
+(6, 2),
+(7, 3);
 
 
 -- Inserir dados na tabela tbl_professor_materias
@@ -501,7 +517,9 @@ INSERT INTO tbl_professor_materias (professor_id, materia_id) VALUES
 -- Inserir dados na tabela tbl_membros
 INSERT INTO tbl_membros (aluno_id, grupo_mentoria_id) VALUES
 (1, 1),
-(2, 1);
+(2, 1),
+(3, 1),
+(4, 2);
 
 -- Inserir dados na tabela tbl_duvida_compartilhada
 INSERT INTO tbl_duvida_compartilhada (conteudo, data_envio, membro_id, respondida) VALUES
@@ -515,10 +533,11 @@ INSERT INTO tbl_resposta_duvida (conteudo, data_resposta, duvida_compartilhada_i
 INSERT INTO tbl_professor_mentor (professor_id, mentor_id) VALUES
 (1, 1);
 
+select * from tbl_mentor;
 -- Inserir dados na tabela tbl_aluno_mentor
 INSERT INTO tbl_aluno_mentor (aluno_id, mentor_id) VALUES
-(2, 1),
-(3, 2);
+(5, 2),
+(6, 3);
 
 -- Inserir dados na tabela tbl_emblema
 INSERT INTO tbl_emblema (nome, descricao, icone) VALUES
@@ -727,6 +746,11 @@ ORDER BY
 -- INSERT INTO tbl_atividade_alunos (atividade_id, aluno_id, status_resposta, data_resposta)
 -- VALUES (1, 2, TRUE, NOW());
 
+
+
+
+
+
 CREATE OR REPLACE VIEW vw_duvidas_por_grupo AS
 SELECT
     dc.id AS id_duvida,
@@ -745,78 +769,6 @@ JOIN
     tbl_alunos AS a ON m.aluno_id = a.id
 ORDER BY
     dc.data_envio DESC;
-    
-    
-
-SELECT 
-    tbl_atividades.id AS id_atividade,
-    tbl_atividades.titulo AS titulo_atividade,
-    tbl_atividades.descricao AS descricao_atividade,
-    tbl_atividades.serie_id AS id_serie,
-    tbl_atividades.materia_id AS id_materia,
-    tbl_atividades.assunto_id AS id_assunto,
-    tbl_atividades.sub_assunto_id AS id_sub_assunto,
-    tbl_assuntos.nome AS nome_assunto,
-    tbl_assuntos.id_assunto_pai AS id_assunto_pai,
-    tbl_assuntos.cor AS cor_assunto,
-    tbl_sub_assuntos.nome AS nome_sub_assunto,
-    tbl_sub_assuntos.id_assunto_pai AS id_assunto_pai_sub_assunto
-FROM 
-    tbl_atividades
-LEFT JOIN tbl_assuntos ON tbl_atividades.assunto_id = tbl_assuntos.id
-LEFT JOIN tbl_assuntos AS tbl_sub_assuntos ON tbl_atividades.sub_assunto_id = tbl_sub_assuntos.id;
-
-SELECT 
-    tbl_atividades.id AS id_atividade,
-    tbl_atividades.titulo AS titulo_atividade,
-    tbl_atividades.descricao AS descricao_atividade,
-    tbl_atividades.serie_id AS id_serie,
-    tbl_atividades.materia_id AS id_materia,
-    tbl_atividades.assunto_id AS id_assunto,
-    tbl_atividades.sub_assunto_id AS id_sub_assunto,
-    tbl_assuntos.nome AS nome_assunto,
-    tbl_assuntos.id_assunto_pai AS id_assunto_pai,
-    tbl_assuntos.cor AS cor_assunto,
-    tbl_sub_assuntos.nome AS nome_sub_assunto,
-    tbl_sub_assuntos.id_assunto_pai AS id_assunto_pai_sub_assunto
-FROM 
-    tbl_atividades
-LEFT JOIN tbl_assuntos ON tbl_atividades.assunto_id = tbl_assuntos.id
-LEFT JOIN tbl_assuntos AS tbl_sub_assuntos ON tbl_atividades.sub_assunto_id = tbl_sub_assuntos.id
-WHERE 
-    tbl_atividades.serie_id = 9;  -- Alterar para a série desejada
-    
-    SELECT 
-    tbl_assuntos.id AS id_assunto,
-    tbl_assuntos.nome AS nome_assunto,
-    tbl_assuntos.id_assunto_pai AS id_assunto_pai,
-    tbl_assuntos.cor AS cor_assunto,
-    CASE 
-        WHEN tbl_sub_assuntos.id IS NOT NULL THEN 'Possui Sub-Assuntos'
-        ELSE 'Não Possui Sub-Assuntos'
-    END AS status_sub_assuntos
-FROM 
-    tbl_assuntos
-LEFT JOIN 
-    tbl_assuntos AS tbl_sub_assuntos ON tbl_assuntos.id = tbl_sub_assuntos.id_assunto_pai;
-
-
-
-
-SELECT 
-    tbl_grupo_mentoria.*, 
-    COUNT(tbl_membros.id) AS quantidade_membros
-FROM 
-    tbl_grupo_mentoria
-LEFT JOIN 
-    tbl_membros ON tbl_grupo_mentoria.id = tbl_membros.grupo_mentoria_id
-WHERE 
-    tbl_grupo_mentoria.id = 1
-GROUP BY 
-    tbl_grupo_mentoria.id;
-
-
-
 
 -- VIEWS, E OS SELECTS -- 
     
@@ -832,9 +784,6 @@ JOIN
     tbl_salas_alunos ON tbl_alunos.id = tbl_salas_alunos.aluno_id  -- Junta alunos com salas que frequentam
 JOIN 
     tbl_salas ON tbl_salas_alunos.sala_id = tbl_salas.id;          -- Junta com a tabela de salas
-
-
-SELECT * FROM vw_alunos_sala_1 where id_sala = 1;
     
 drop view vw_alunos_sala_1;
     
@@ -873,9 +822,6 @@ WHERE
     );
 
     drop view vw_emblemas_aluno;
-    
-    SELECT * FROM vw_emblemas_aluno2 WHERE id_aluno = 1;
-
 
     ---------------------------------------------------------------------------------------------------------------------
 
@@ -895,11 +841,6 @@ LEFT JOIN
     tbl_aluno_emblema ae ON ae.id_nivel_emblema = n.id
 WHERE 
     n.nivel = 1;  -- Filtro para emblemas não conquistados
-
-
-SELECT * 
-FROM vw_emblemas_nao_conquistados
-WHERE id_aluno = 2;
 
     
 drop view vw_emblemas_nao_conquistados;
@@ -925,13 +866,6 @@ LEFT JOIN
 ORDER BY 
     tbl_alunos_ranks.pontos_rank DESC;  -- Ordena os resultados por pontos de forma decrescente
 
-
-
-SELECT *
-FROM vw_alunos_ranking_sala
-JOIN tbl_salas_alunos ON vw_alunos_ranking_sala.id_aluno = tbl_salas_alunos.aluno_id
-WHERE tbl_salas_alunos.sala_id = 1;  -- Substitua 1 pelo ID da sala desejada
-
     drop view vw_alunos_ranking_sala_1;
     
 
@@ -952,10 +886,6 @@ JOIN
     
 drop view vw_informacoes_alunos_ranking;
     
-SELECT * 
-FROM vw_informacoes_alunos_ranking
-WHERE id_aluno = 2; 
-    
         ---------------------------------------------------------------------------------------------------------------------
     
     
@@ -971,19 +901,6 @@ JOIN
     tbl_alunos AS alunos ON aluno_mentor.aluno_id = alunos.id
 JOIN 
     tbl_mentor AS mentores ON aluno_mentor.mentor_id = mentores.id;
-
-    
-    SELECT * FROM vw_alunos_mentores;
-
-	-- Alunos de um Mentor Específico
-    SELECT * FROM vw_alunos_mentores
-WHERE mentor_id = 1;
-
--- Detalhes de um Aluno Específico
-SELECT * FROM vw_alunos_mentores
-WHERE aluno_id = 2;
-
-
 
     ---------------------------------------------------------------------------------------------------------------------
     
@@ -1006,24 +923,7 @@ FROM
 INNER JOIN 
     tbl_alunos a ON m.aluno_id = a.id
 INNER JOIN 
-    tbl_grupo_mentoria g ON m.grupo_mentoria_id = g.id;    -- Filtra para o grupo de mentoria específico
-    
-    
-    
-    SELECT * FROM vw_membros_alunos_grupo_mentoria;
-    
-    
-    -- Filtrar por Grupo de Mentoria Específico:
-    SELECT * FROM vw_membros_alunos_grupo_mentoria
-WHERE grupo_mentoria_id = 1;
-
-
--- Filtrar por Aluno Específico
-SELECT * FROM vw_membros_alunos_grupo_mentoria
-WHERE aluno_id = 1;
-
-
-    
+    tbl_grupo_mentoria g ON m.grupo_mentoria_id = g.id;    -- Filtra para o grupo de mentoria específico    
     
     ---------------------------------------------------------------------------------------------------------------------
     
@@ -1047,19 +947,6 @@ FROM
 LEFT JOIN tbl_professor_mentor pm ON m.id = pm.mentor_id
 LEFT JOIN tbl_aluno_mentor am ON m.id = am.mentor_id; -- Junta com a tabela de alunos mentores
 
-
-SELECT * FROM vw_informacoes_mentores;
-
-
--- Filtrar por ID do Mentor
-SELECT * FROM vw_informacoes_mentores
-WHERE mentor_id = 1;
-
-
--- Filtrar por nome do Mentor
-SELECT * FROM vw_informacoes_mentores
-WHERE tipo_mentor = 'Aluno';
-
   ---------------------------------------------------------------------------------------------------------------------
 
 
@@ -1079,18 +966,6 @@ INNER JOIN
 INNER JOIN 
     tbl_alunos alunos ON membros.aluno_id = alunos.id;
 
-
-SELECT * FROM vw_duvidas_compartilhadas;
-
--- Dúvidas Respondidas: 
-SELECT * FROM vw_duvidas_compartilhadas
-WHERE status_da_duvida = 'Respondida';
-
-
--- Dúvidas Não Respondidas:
-SELECT * FROM vw_duvidas_compartilhadas
-WHERE status_da_duvida = 'Não respondida';
-
     
     
       ---------------------------------------------------------------------------------------------------------------------
@@ -1105,22 +980,6 @@ SELECT
     respondida AS status_duvida
 FROM 
     tbl_duvida_compartilhada;
-    
-    
-    -- Dúvidas Respondidas:
-    SELECT * FROM vw_duvidas_membro
-WHERE status_duvida = 1;
-
-
- -- Dúvidas Não Respondidas:
-  SELECT * FROM vw_duvidas_membro
-WHERE status_duvida = 0;
-
-
--- Dúvidas de um Membro Específico:
-SELECT * FROM vw_duvidas_membro
-WHERE id_membro = 1;
-
 
           ---------------------------------------------------------------------------------------------------------------------
     
@@ -1141,22 +1000,6 @@ JOIN
     tbl_atividade_grupo_mentoria agm ON q.atividade_grupo_mentoria_id = agm.id;
  -- Junta com a tabela de atividades
     
-    
-    SELECT * FROM vw_questoes_atividades;
-    
-    
-    --  Filtrar questões de uma atividade específica
-    SELECT *
-FROM vw_questoes_atividades
-WHERE atividade_id = 1;
-
-
- -- Obter questões de uma atividade específica e incluir apenas as questões com imagem
-SELECT *
-FROM vw_questoes_atividades
-WHERE atividade_id = 1 AND imagem IS NOT NULL;
-    
-    
      ---------------------------------------------------------------------------------------------------------------------
     
     CREATE VIEW vw_duvidas_respondidas AS
@@ -1172,11 +1015,6 @@ INNER JOIN
     tbl_alunos alunos ON membros.aluno_id = alunos.id
 WHERE 
     duvidas.respondida = 1;
-    
-    
-    SELECT *
-FROM vw_duvidas_respondidas;
-
   
         ---------------------------------------------------------------------------------------------------------------------
     
@@ -1193,21 +1031,6 @@ JOIN
     tbl_professor AS professores ON professor_mentor.professor_id = professores.id  -- Junta com a tabela de professores
 JOIN 
     tbl_mentor AS mentores ON professor_mentor.mentor_id = mentores.id;  -- Junta com a tabela de mentore
-    
-    
-    SELECT *
-FROM vw_professores_mentores;
-
-
-SELECT *
-FROM vw_professores_mentores
-WHERE professor_id = 1;
-
-
-SELECT *
-FROM vw_professores_mentores
-WHERE mentor_id = 1;
-
 
             ---------------------------------------------------------------------------------------------------------------------
     
@@ -1225,18 +1048,3 @@ JOIN
     tbl_alunos AS alunos ON aluno_mentor.aluno_id = alunos.id  -- Junta com a tabela de alunos
 JOIN 
     tbl_mentor AS mentores ON aluno_mentor.mentor_id = mentores.id;  -- Junta com a tabela de mentores
-    
-    
-    
-    SELECT * 
-FROM vw_mentores_alunos;
-
-
-SELECT * 
-FROM vw_mentores_alunos 
-WHERE aluno_id = 1;  -- Substitua 2 pelo ID do aluno desejado
-
-
-SELECT * 
-FROM vw_mentores_alunos 
-WHERE mentor_id = 1;  -- Substitua 3 pelo ID do mentor desejado
