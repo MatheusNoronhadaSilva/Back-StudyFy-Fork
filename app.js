@@ -902,8 +902,6 @@ app.post('/v1/studyFy/login', cors(), bodyParserJSON, async function(request, re
 
     // Encaminha os dados para a controller realizar o login
     let resultadoLogin = await controllerAluno.loginUsuario(dadosBody.email, dadosBody.senha);
-
-    console.log('id');
     
     console.log(resultadoLogin);
     response.status(resultadoLogin.status_code);
