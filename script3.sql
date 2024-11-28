@@ -208,8 +208,6 @@ CREATE TABLE tbl_resposta_duvida (
     FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id)
 );
 
-
-
 -- Tabela tbl_professor_mentor
 CREATE TABLE tbl_professor_mentor (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
@@ -227,6 +225,8 @@ CREATE TABLE tbl_aluno_mentor (
     FOREIGN KEY (aluno_id) REFERENCES tbl_alunos(id),
     FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id) ON DELETE CASCADE
 );
+
+select * from tbl_grupo_mentoria;
 
 
 

@@ -288,30 +288,37 @@ const selectMentorByGrupoId = async (idGrupo) => {
         const sql = `
 SELECT 
     tbl_mentor.id AS mentor_id,
-    COALESCE(tbl_professor.nome, tbl_alunos.nome) AS mentor_nome,  -- Pega o nome, seja de professor ou aluno
     CASE
-        WHEN tbl_professor.id IS NOT NULL THEN 'Professor'
-        WHEN tbl_alunos.id IS NOT NULL THEN 'Aluno/mentor'
-    END AS mentor_tipo,  -- Identifica se o mentor é um professor ou aluno
-    COALESCE(tbl_professor_imagens.caminho_imagem, tbl_alunos_imagens.caminho_imagem) AS foto_perfil  -- Caminho da imagem de perfil, se existirem
+        WHEN tbl_professor_mentor.professor_id IS NOT NULL THEN tbl_professor.nome
+        WHEN tbl_aluno_mentor.aluno_id IS NOT NULL THEN tbl_alunos.nome
+    END AS mentor_nome,  -- Seleciona o nome correto do mentor
+    CASE
+        WHEN tbl_professor_mentor.professor_id IS NOT NULL THEN 'Professor'
+        WHEN tbl_aluno_mentor.aluno_id IS NOT NULL THEN 'Aluno/mentor'
+    END AS mentor_tipo,  -- Identifica o tipo do mentor
+    CASE
+        WHEN tbl_professor_mentor.professor_id IS NOT NULL THEN tbl_professor_imagens.caminho_imagem
+        WHEN tbl_aluno_mentor.aluno_id IS NOT NULL THEN tbl_alunos_imagens.caminho_imagem
+    END AS foto_perfil  -- Seleciona a imagem correta
 FROM 
     tbl_grupo_mentoria
 LEFT JOIN 
-    tbl_membros ON tbl_membros.grupo_mentoria_id = tbl_grupo_mentoria.id
-LEFT JOIN 
     tbl_mentor ON tbl_mentor.id = tbl_grupo_mentoria.mentor_id
 LEFT JOIN 
-    tbl_professor ON tbl_professor.id = tbl_mentor.id  -- Junta com professor
+    tbl_professor_mentor ON tbl_professor_mentor.mentor_id = tbl_mentor.id
 LEFT JOIN 
-    tbl_alunos ON tbl_alunos.id = tbl_mentor.id  -- Junta com aluno
+    tbl_professor ON tbl_professor.id = tbl_professor_mentor.professor_id
 LEFT JOIN 
-    tbl_imagens_usuario AS tbl_professor_imagens ON tbl_professor_imagens.id = tbl_professor.imagem_id  -- Imagem do professor
+    tbl_aluno_mentor ON tbl_aluno_mentor.mentor_id = tbl_mentor.id
 LEFT JOIN 
-    tbl_imagens_usuario AS tbl_alunos_imagens ON tbl_alunos_imagens.id = tbl_alunos.imagem_id  -- Imagem do aluno
+    tbl_alunos ON tbl_alunos.id = tbl_aluno_mentor.aluno_id
+LEFT JOIN 
+    tbl_imagens_usuario AS tbl_professor_imagens ON tbl_professor_imagens.id = tbl_professor.imagem_id
+LEFT JOIN 
+    tbl_imagens_usuario AS tbl_alunos_imagens ON tbl_alunos_imagens.id = tbl_alunos.imagem_id
 WHERE 
-    tbl_grupo_mentoria.id = ${idGrupo}
-GROUP BY 
-    tbl_grupo_mentoria.id, tbl_mentor.id;
+    tbl_grupo_mentoria.id = ${idGrupo};
+
 
         `;
 
