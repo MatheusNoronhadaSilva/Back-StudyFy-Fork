@@ -11,7 +11,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 // Função para selecionar questão pelo ID
-const selectQuestaoByID = async function(id) {
+const selectQuestaoByID = async function (id) {
     try {
         let sql = `SELECT * FROM tbl_questao WHERE id = ${id};`;
         let resultado = await prisma.$queryRawUnsafe(sql);
@@ -23,7 +23,7 @@ const selectQuestaoByID = async function(id) {
 };
 
 // Função para selecionar todas as questões
-const selectAllQuestoes = async function() {
+const selectAllQuestoes = async function () {
     try {
         let sql = `SELECT * FROM tbl_questao;`;
         let resultado = await prisma.$queryRawUnsafe(sql);
@@ -35,7 +35,7 @@ const selectAllQuestoes = async function() {
 };
 
 // Função para inserir nova questão
-const insertQuestao = async function(dadosQuestao) {
+const insertQuestao = async function (dadosQuestao) {
     try {
         let sql = `INSERT INTO tbl_questao (enunciado, tipo_questao_id, imagem, atividade_grupo_mentoria_id) 
                    VALUES ('${dadosQuestao.enunciado}', ${dadosQuestao.tipo_questao_id}, 
@@ -49,7 +49,7 @@ const insertQuestao = async function(dadosQuestao) {
 };
 
 // Função para atualizar questão
-const updateQuestao = async function(id, dadosQuestao) {
+const updateQuestao = async function (id, dadosQuestao) {
     try {
         let sql = `UPDATE tbl_questao 
                    SET enunciado = '${dadosQuestao.enunciado}', 
@@ -66,7 +66,7 @@ const updateQuestao = async function(id, dadosQuestao) {
 };
 
 // Função para deletar questão
-const deleteQuestao = async function(id) {
+const deleteQuestao = async function (id) {
     try {
         let sql = `DELETE FROM tbl_questao WHERE id = ${id};`;
         let resultado = await prisma.$executeRawUnsafe(sql);
@@ -78,7 +78,7 @@ const deleteQuestao = async function(id) {
 };
 
 const SelectGeralQuestao = async function () {
-   
+
     try {
         let sql = `SELECT 
     q.id AS questao_id,
@@ -102,7 +102,7 @@ JOIN
     }
 }
 
-const selectQuestaoPorAtividade = async function(idAtividade) {
+const selectQuestaoPorAtividade = async function (idAtividade) {
     try {
         let sql = `
 SELECT 
@@ -128,7 +128,7 @@ ORDER BY
     }
 };
 
-const selectRespostasMultiplaEscolha = async function(questaoId) {
+const selectRespostasMultiplaEscolha = async function (questaoId) {
     try {
         let sql = `
             SELECT * 
@@ -142,7 +142,7 @@ const selectRespostasMultiplaEscolha = async function(questaoId) {
     }
 };
 
-const selectRespostasVerdadeiroFalso = async function(questaoId) {
+const selectRespostasVerdadeiroFalso = async function (questaoId) {
     try {
         let sql = `
             SELECT * 
@@ -156,7 +156,7 @@ const selectRespostasVerdadeiroFalso = async function(questaoId) {
     }
 };
 
-const selectRespostasLacunas = async function(questaoId) {
+const selectRespostasLacunas = async function (questaoId) {
     try {
         let sql = `
             SELECT 
@@ -180,28 +180,28 @@ ORDER BY
         const result = await prisma.$queryRawUnsafe(sql);
 
         const mapaAgrupado = {};
-        
+
         // Percorre o resultado para organizar os dados
         result.forEach(item => {
-          // Verifica se a lacuna já está no mapa
-          if (!mapaAgrupado[item.posicao_lacuna]) {
-            mapaAgrupado[item.posicao_lacuna] = {
-              posicao_lacuna: item.posicao_lacuna,
-              resposta_correta_lacuna: item.resposta_correta_lacuna,
-              opcoes_possiveis: []
-            };
-          }
-        
-          // Adiciona a opção à lista de opções possíveis (evitando duplicação)
-          if (!mapaAgrupado[item.posicao_lacuna].opcoes_possiveis.includes(item.texto_opcao_possivel)) {
-            mapaAgrupado[item.posicao_lacuna].opcoes_possiveis.push(item.texto_opcao_possivel);
-          }
+            // Verifica se a lacuna já está no mapa
+            if (!mapaAgrupado[item.posicao_lacuna]) {
+                mapaAgrupado[item.posicao_lacuna] = {
+                    posicao_lacuna: item.posicao_lacuna,
+                    resposta_correta_lacuna: item.resposta_correta_lacuna,
+                    opcoes_possiveis: []
+                };
+            }
+
+            // Adiciona a opção à lista de opções possíveis (evitando duplicação)
+            if (!mapaAgrupado[item.posicao_lacuna].opcoes_possiveis.includes(item.texto_opcao_possivel)) {
+                mapaAgrupado[item.posicao_lacuna].opcoes_possiveis.push(item.texto_opcao_possivel);
+            }
         });
-        
+
         // Converte o mapa em um array, que será retornado como o agrupado
         const agrupado = Object.values(mapaAgrupado);
 
-console.log(agrupado);
+        console.log(agrupado);
 
 
         return agrupado
@@ -211,7 +211,7 @@ console.log(agrupado);
     }
 };
 
-const selectRespostasCorrespondencia = async function(questaoId) {
+const selectRespostasCorrespondencia = async function (questaoId) {
     try {
         let sql = `
             SELECT * 
@@ -220,13 +220,13 @@ const selectRespostasCorrespondencia = async function(questaoId) {
         `;
 
         console.log(sql);
-        
+
 
         const resultado = await prisma.$queryRawUnsafe(sql);
 
         console.log(resultado);
         console.log('id do grupo:', JSON.stringify(resultado, null, 2));
-        
+
         return resultado
     } catch (error) {
         console.error('Erro ao buscar respostas de correspondência:', error);
@@ -234,14 +234,13 @@ const selectRespostasCorrespondencia = async function(questaoId) {
     }
 };
 
-const selectAtividadesByMateriaAndSerie = async function(materiaId, serieId) {
+const selectAtividadesByMateriaAndSerie = async function (materiaId, serieId) {
     try {
         let sql = `
 SELECT 
     tbl_atividades.id AS id_da_atividade,
     tbl_atividades.titulo AS titulo_da_atividade,
     tbl_atividades.descricao AS descricao_da_atividade,
-    tbl_atividades.status_resposta AS status_da_resposta,
     tbl_atividades.data_resposta AS data_da_resposta,
     tbl_sub_assuntos.id AS id_do_sub_assunto,
     tbl_sub_assuntos.nome AS nome_do_sub_assunto,
@@ -267,11 +266,9 @@ WHERE
     tbl_materias.id = ${materiaId}
     AND tbl_series.id = ${serieId};
         `;
-        
+
         let atividades = await prisma.$queryRawUnsafe(sql);
 
-        console.log(atividades);
-        
         return atividades;
     } catch (error) {
         console.error(error);
@@ -279,9 +276,31 @@ WHERE
     }
 };
 
+const selectAtividadesFeitasByAluno = async function (atividadeId, alunoId) {
+
+    try {
+
+        console.log('tetswdewdfkue3f');
+        
+        let sql = `
+SELECT status_resposta
+FROM tbl_atividade_aluno
+WHERE atividade_id = ${atividadeId} AND aluno_id = ${alunoId};
+        `;        
+
+        let atividades = await prisma.$queryRawUnsafe(sql);
+
+        return atividades;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 
 
 module.exports = {
+    selectAtividadesFeitasByAluno,
     selectAtividadesByMateriaAndSerie,
     selectRespostasCorrespondencia,
     selectRespostasLacunas,

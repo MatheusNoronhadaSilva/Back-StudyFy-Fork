@@ -32,7 +32,8 @@ const selectMateriaByIdAluno = async function(id) {
     try {
         let sql = `   SELECT 
         m.id AS id, 
-        m.nome_materia AS materia
+        m.nome_materia AS materia,
+        m.imagem_materia AS imagem_materia
     FROM 
         tbl_alunos a
     JOIN 

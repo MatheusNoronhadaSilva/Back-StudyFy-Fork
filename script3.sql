@@ -226,10 +226,6 @@ CREATE TABLE tbl_aluno_mentor (
     FOREIGN KEY (mentor_id) REFERENCES tbl_mentor(id) ON DELETE CASCADE
 );
 
-select * from tbl_grupo_mentoria;
-
-
-
 CREATE TABLE tbl_emblema (
     id INT PRIMARY KEY AUTO_INCREMENT,
     nome VARCHAR(255) NOT NULL,
@@ -279,13 +275,12 @@ CREATE TABLE tbl_atividades (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     titulo VARCHAR(100) NOT NULL,
     descricao TEXT NOT NULL,
-    status_resposta boolean default false not null,
     data_resposta TIMESTAMP NULL, -- Data e hora da resposta, se respondida
     sub_assunto_id INT, -- Referência ao assunto principal da atividade
     FOREIGN KEY (sub_assunto_id) REFERENCES tbl_sub_assuntos(id)
 );
 
-CREATE TABLE tbl_atividade_alunos (
+CREATE TABLE tbl_atividade_aluno (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     atividade_id INT NOT NULL, -- Referência à atividade
     aluno_id INT NOT NULL, -- Referência ao usuário
@@ -607,10 +602,10 @@ INSERT INTO tbl_atividades (titulo, descricao, sub_assunto_id) VALUES
 ('A Independência do Brasil', 'Atividade sobre o processo de independência do Brasil e as figuras históricas envolvidas.', 6),
 ('A Proclamação da República', 'Atividade sobre a mudança do regime monárquico para o republicano no Brasil.', 6);
 
--- Inserção das Questões
-desc tbl_questao;
-select * from tbl_tipo_questao;
-
+select * from tbl_grupo_mentoria;
+select * from tbl_mentor;
+select * from tbl_aluno_mentor;
+select * from tbl_alunos;
 
 INSERT INTO tbl_questao (enunciado, tipo_questao_id, imagem, atividade_id) VALUES
 -- Questões para as atividades de "Sub assunto 1"
@@ -739,9 +734,10 @@ ORDER BY
 
        
 	-- João ainda não respondeu a atividade 1
--- INSERT INTO tbl_atividade_alunos (atividade_id, aluno_id)
--- VALUES (1, 1);
+INSERT INTO tbl_atividade_aluno (atividade_id, aluno_id, status_resposta, data_resposta)
+VALUES (1, 1, true, now());
 
+select * from tbl_atividade_aluno;
 -- Maria respondeu a atividade 1
 -- INSERT INTO tbl_atividade_alunos (atividade_id, aluno_id, status_resposta, data_resposta)
 -- VALUES (1, 2, TRUE, NOW());

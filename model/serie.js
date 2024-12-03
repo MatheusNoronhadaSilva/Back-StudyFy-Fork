@@ -16,6 +16,18 @@ const selectSeries = async function () {
     }
 };
 
+const selectSerieAluno = async function (idAluno) {
+    try {
+        return await prisma.$queryRaw`select tbl_series.id, tbl_series.nome from tbl_alunos join tbl_series on tbl_alunos.serie_id = tbl_series.id where tbl_alunos.id = ${idAluno};
+;
+`;
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+};
+
 module.exports = {
-    selectSeries
+    selectSeries,
+    selectSerieAluno
 }

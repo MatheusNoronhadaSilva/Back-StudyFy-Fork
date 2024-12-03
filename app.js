@@ -360,6 +360,22 @@ app.get('/v1/studyfy/series', cors(), async function(request, response){
     }
 })
 
+app.get('/v1/studyfy/series/aluno/:id', cors(), async function(request, response){
+
+    try {
+
+        let idAluno = request.params.id;
+
+        let dadosSeriesAluno = await controllerSeries.getSerieAlunoESeries(idAluno);
+        
+        response.status(dadosSeriesAluno.status_code);
+        response.json(dadosSeriesAluno);
+    } catch (error) {
+        console.error('Erro ao listar series e serie do aluno:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+})
+
 // --------------------   CRUD GRUPO DE DE MENTORIA  ---------------------        
 
 app.get('/v1/studyfy/mentorias', cors(), async function(request, response) {
@@ -685,6 +701,27 @@ app.get('/v1/studyfy/questoesPorAtividade/:atividade_id', cors(), async function
         response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
     }
 });
+
+app.get('/v1/studyfy/atividadesFeitas/:atividade_id/:aluno_id', cors(), async function(request, response) {
+    try {
+        
+        // Recebe o ID da atividade (atividade_id) da requisição
+        let atividadeId = request.params.atividade_id;
+        let alunoId = request.params.aluno_id
+        
+        
+        // Encaminha o atividadeId para a controller buscar as questões da atividade
+        let dadosQuestoes = await controllerQuestao.getBuscarAtividadesFeitas(atividadeId, alunoId);
+        
+        response.status(dadosQuestoes.status_code);
+        response.json(dadosQuestoes);
+    } catch (error) {
+        console.error('Erro ao buscar questões da atividade:', error);
+        response.status(500).json({ status_code: 500, message: 'Erro interno do servidor' });
+    }
+});
+
+
 
 
 

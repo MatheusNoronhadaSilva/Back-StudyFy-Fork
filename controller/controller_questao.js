@@ -183,10 +183,43 @@ const getBuscarAtividades = async function(materiaId, serieId) {
     }
 };
 
+const getBuscarAtividadesFeitas = async function(atividadeId, alunoId) {
+    try {
+        let atividadesJSON = {};
+        
+        // Chama o modelo para realizar o select no banco de dados
+        let dadosAtividades = await questaoDAO.selectAtividadesFeitasByAluno(atividadeId, alunoId);
+                
+        if (dadosAtividades) {
+            if (dadosAtividades.length > 0) {
+                
+                atividadesJSON.statusAtividade = dadosAtividades;
+                atividadesJSON.status_code = 200;
+                return atividadesJSON;
+            } else {
+                console.log('teste2');
+                
+                atividadesJSON.statusAtividade = dadosAtividades;
+                atividadesJSON.status_code = 200;
+
+                console.log('atividade', atividadesJSON);
+                
+                return atividadesJSON;
+            }
+        } else {
+            return { status_code: 500, message: 'Erro ao buscar atividades no banco de dados' }; // 500
+        }
+    } catch (error) {
+        console.error(error);
+        return { status_code: 500, message: 'Erro interno do servidor' }; // 500
+    }
+};
+
 
 
 // Exporta as funções
 module.exports = {
+    getBuscarAtividadesFeitas,
     getBuscarQuestoesPorAtividade,
     getBuscarAtividades,
     getListarQuestoes,

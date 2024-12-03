@@ -27,6 +27,35 @@ const getSeries = async function () {
     }
 };
 
+const getSerieAlunoESeries = async function (idAluno) {
+    try {
+        let seriesJSON = {};
+        let dadosSeriesAluno = await SerieDAO.selectSerieAluno(idAluno);
+        
+        if (dadosSeriesAluno) {
+
+            let dadosSeries = await SerieDAO.selectSeries();
+
+            if(dadosSeries) {
+
+                seriesJSON.serieAluno = dadosSeriesAluno;
+                seriesJSON.series = dadosSeries
+                seriesJSON.series.quantidade = dadosSeries.length;
+                seriesJSON.status_code = 200;
+                
+                return seriesJSON;
+
+            }
+        } else {
+            return message.ERROR_NOT_FOUND;
+        }
+    } catch (error) {
+        console.log(error);
+        return message.ERROR_INTERNAL_SERVER;
+    }
+};
+
 module.exports = {
+    getSerieAlunoESeries,
     getSeries
 };
