@@ -155,8 +155,8 @@ const insertAluno = async function(dadosAluno) {
                     senha,
                     telefone,
                     data_nascimento,
-                    serie,
-                    foto,
+                    serie_id,
+                    imagem_id,
                     pontos,
                     id_rank
                 ) 
@@ -172,21 +172,32 @@ const insertAluno = async function(dadosAluno) {
             '${dadosAluno.id_rank || 1}'  
             )`; 
 
-        console.log(sql);
-
         let result = await prisma.$executeRawUnsafe(sql);
+        console.log(result);
         
         if (result) {
             console.log(dadosAluno);
+            console.log('teste');
             
             let lastID = await lastIDAluno();
-            const materias = Array.isArray(dadosAluno.materias) ? dadosAluno.materias : [];
+
+            console.log(lastID);
+            
+            const materias = dadosAluno.materia_id
+            console.log('materias', materias);
+            
             for (let aluno of materias) {
                 // Verificar se a combinação já existe
                 let checkSql = `SELECT * FROM tbl_alunos_materias 
                                 WHERE aluno_id = ${lastID[0].id} AND materia_id = ${aluno};`;
 
+                
+                console.log('checkSql', checkSql);
+                
                 let insert = await prisma.$queryRawUnsafe(checkSql);
+
+                console.log('insert', insert);
+                
 
                 if (insert.length === 0) {
                     // Se não existe, insere

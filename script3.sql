@@ -504,6 +504,9 @@ INSERT INTO tbl_alunos_materias (aluno_id, materia_id) VALUES
 (6, 2),
 (7, 3);
 
+select * from tbl_alunos_materias;
+select * from tbl_alunos;
+
 
 -- Inserir dados na tabela tbl_professor_materias
 INSERT INTO tbl_professor_materias (professor_id, materia_id) VALUES
@@ -1031,7 +1034,8 @@ JOIN
 
             ---------------------------------------------------------------------------------------------------------------------
     
-    
+    select * from tbl_alunos;
+    select * from tbl_grupo_mentoria;
     
     CREATE VIEW vw_mentores_alunos AS
 SELECT 
