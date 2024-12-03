@@ -496,6 +496,7 @@ select * from tbl_alunos;
 INSERT INTO tbl_alunos_materias (aluno_id, materia_id) VALUES
 (1, 1),
 (1, 2),
+(1, 3),
 (2, 2),
 (3, 1),
 (4, 1),
@@ -563,9 +564,9 @@ INSERT INTO tbl_temporadas (data_inicio, data_fim)
 
 -- Inserção dos Assuntos
 INSERT INTO tbl_assuntos (nome, cor, materia_id, serie_id) VALUES 
-('Assunto 1', '#009000', 3, 9),
-('Assunto 2', '#ffa500', 3, 9),
-('Assunto 3', '#0000ff', 3, 9);
+('Assunto 1', '#009000', 3, 6),
+('Assunto 2', '#ffa500', 3, 6),
+('Assunto 3', '#0000ff', 3, 6);
 
 -- Inserção dos Sub-assuntos
 INSERT INTO tbl_sub_assuntos (nome, assunto_id) VALUES 

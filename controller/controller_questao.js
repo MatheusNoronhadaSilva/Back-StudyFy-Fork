@@ -166,13 +166,16 @@ const getBuscarAtividades = async function(materiaId, serieId) {
         // Chama o modelo para realizar o select no banco de dados
         let dadosAtividades = await questaoDAO.selectAtividadesByMateriaAndSerie(materiaId, serieId);
 
+        console.log('dadosAtividades', dadosAtividades);
         if (dadosAtividades) {
             if (dadosAtividades.length > 0) {
                 atividadesJSON.atividades = dadosAtividades;
                 atividadesJSON.status_code = 200;
                 return atividadesJSON;
             } else {
-                return { status_code: 404, message: 'Nenhuma atividade encontrada para essa matéria e série' }; // 404
+                atividadesJSON.atividades = dadosAtividades;
+                atividadesJSON.status_code = 200;
+                return atividadesJSON;
             }
         } else {
             return { status_code: 500, message: 'Erro ao buscar atividades no banco de dados' }; // 500
