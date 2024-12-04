@@ -468,7 +468,7 @@ INSERT INTO tbl_professor (nome, email, senha, data_nascimento, telefone, imagem
 
 -- Inserir dados na tabela tbl_alunos
 INSERT INTO tbl_alunos (nome, email, senha, data_nascimento, telefone, serie_id,  pontos, id_rank, imagem_id) VALUES
-('Aluno 1', 'aluno1@example.com', 'senha123', '2005-01-01', '123456789', 8, 0, 1, 1),
+('Matheus', 'matheusnoronhasilva.trabalhos@gmail.com', 'senha123', '2005-01-01', '123456789', 8, 0, 1, 1),
 ('Aluno 2', 'aluno2@example.com', 'senha123', '2005-02-01', '987654321', 11, 0, 1, 2),
 ('Aluno 3', 'aluno3@example.com', 'senha123', '2005-02-01', '987654323', 5, 0, 1, 1),
 ('Aluno 4', 'aluno4@example.com', 'senha123', '2005-02-01', '987655453', 6, 0, 1, 2),
@@ -519,12 +519,12 @@ INSERT INTO tbl_membros (aluno_id, grupo_mentoria_id) VALUES
 (4, 2);
 
 -- Inserir dados na tabela tbl_duvida_compartilhada
-INSERT INTO tbl_duvida_compartilhada (conteudo, data_envio, membro_id, respondida) VALUES
-('Qual é a dúvida?', '2024-01-10', 1, false);
+-- INSERT INTO tbl_duvida_compartilhada (conteudo, data_envio, membro_id, respondida) VALUES
+-- ('Qual é a dúvida?', '2024-01-10', 1, false);
 
 -- Inserir dados na tabela tbl_resposta_duvida
-INSERT INTO tbl_resposta_duvida (conteudo, data_resposta, duvida_compartilhada_id, mentor_id) VALUES
-('Aqui está a resposta', '2024-01-11', 1, 1);
+-- INSERT INTO tbl_resposta_duvida (conteudo, data_resposta, duvida_compartilhada_id, mentor_id) VALUES
+-- ('Aqui está a resposta', '2024-01-11', 1, 1);
 
 -- Inserir dados na tabela tbl_professor_mentor
 INSERT INTO tbl_professor_mentor (professor_id, mentor_id) VALUES
