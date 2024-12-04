@@ -118,20 +118,30 @@ const setInserirNovaDuvida = async function(dadosDuvida, contentType) {
         if (String(contentType).toLowerCase() === 'application/json') {
             // Validação dos campos obrigatórios
             if (!dadosDuvida.conteudo || dadosDuvida.conteudo.length > 500 ||
-                !dadosDuvida.data_envio || dadosDuvida.data_envio.length > 45 ||
-                !dadosDuvida.membro_id || typeof dadosDuvida.membro_id !== 'number' 
+                !dadosDuvida.data_envio || dadosDuvida.data_envio.length > 45
                ) {
                 return { error: "Campos obrigatórios inválidos." };
             } else {
-                let novaDuvida = await duvidaCompartilhadaDAO.inserirDuvidaCompartilhada(dadosDuvida);
                 
-                if (novaDuvida) {
-                    return {
-                        status: "Dúvida criada com sucesso!",
-                        status_code: 201,
-                    };
+                let membroId = await duvidaCompartilhadaDAO.getMembroIdAluno(dadosDuvida.user_id, dadosDuvida.grupo_id)
+
+                console.log(membroId);
+
+                const idMembro = membroId[0].id
+                
+                if(membroId){
+                    let novaDuvida = await duvidaCompartilhadaDAO.inserirDuvidaCompartilhada(dadosDuvida, idMembro);
+                
+                    if (novaDuvida) {
+                        return {
+                            status: "Dúvida criada com sucesso!",
+                            status_code: 201,
+                        };
+                    } else {
+                        return { error: "Erro interno ao inserir na base de dados." };
+                    }
                 } else {
-                    return { error: "Erro interno ao inserir na base de dados." };
+                    return { error: "Não achou o id do membro" };
                 }
             }
         } else {

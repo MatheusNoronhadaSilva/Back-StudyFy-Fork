@@ -37,6 +37,26 @@ const selectAllDuvidas = async function(){
         
 }
 
+const getMembroIdAluno = async (alunoId, grupoId) => {
+    try {
+        
+        let sql = `select id from tbl_membros where aluno_id = ${alunoId} and grupo_mentoria_id = ${grupoId};
+`
+console.log(sql);
+
+    let rsMembro = await prisma.$queryRawUnsafe(sql)
+
+    if(rsMembro){
+        return rsMembro
+    } else {
+        return false
+    }
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}
+
 
 
 const selectDuvidasRespondidas = async function(){
@@ -76,8 +96,11 @@ const selectDuvidasNaoRespondidas = async function(){
     }
 
 
-    const inserirDuvidaCompartilhada = async function(dadosDuvida) {
+    const inserirDuvidaCompartilhada = async function(dadosDuvida, idMembro) {
         try {
+
+            console.log('dadosduvida', dadosDuvida);
+            
             // SQL para inserir na tabela tbl_duvida_compartilhada
             let sql = `INSERT INTO tbl_duvida_compartilhada (
                             conteudo,
@@ -88,7 +111,7 @@ const selectDuvidasNaoRespondidas = async function(){
                         (
                             '${dadosDuvida.conteudo}',
                             '${dadosDuvida.data_envio}',
-                            ${dadosDuvida.membro_id}
+                            ${idMembro}
                         );`;
     
             console.log(sql);
@@ -197,6 +220,7 @@ const getDuvidasPorGrupoMentoria = async function(grupoId) {
 };
 
 module.exports ={
+    getMembroIdAluno,
     getDuvidasPorGrupoMentoria,
     updateDuvidaCompartilhada,
     selectAllDuvidas,

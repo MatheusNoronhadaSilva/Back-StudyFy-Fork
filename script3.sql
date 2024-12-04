@@ -18,6 +18,7 @@ CREATE TABLE tbl_mentor (
     data_ingresso TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+
 CREATE TABLE tbl_imagens_usuario (
     id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
     nome_imagem VARCHAR(255) NOT NULL, -- Nome ou título da imagem
@@ -503,9 +504,6 @@ INSERT INTO tbl_alunos_materias (aluno_id, materia_id) VALUES
 (5, 2),
 (6, 2),
 (7, 3);
-
-select * from tbl_alunos_materias;
-select * from tbl_alunos;
 
 
 -- Inserir dados na tabela tbl_professor_materias
@@ -1034,8 +1032,7 @@ JOIN
 
             ---------------------------------------------------------------------------------------------------------------------
     
-    select * from tbl_alunos;
-    select * from tbl_grupo_mentoria;
+    
     
     CREATE VIEW vw_mentores_alunos AS
 SELECT 

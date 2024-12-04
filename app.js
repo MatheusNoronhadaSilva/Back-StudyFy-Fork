@@ -837,9 +837,14 @@ app.post('/v1/studyfy/duvidaCompartilhada', cors(), bodyParserJSON, async functi
         
         // Recebe todos os dados encaminhados na requisição pelo body
         let dadosBody = request.body;
+
+        console.log(dadosBody);
+        
         
         // Encaminha os dados para a controller
         let resultDadosNovaDuvida = await controllerDuvidaCompartilhada.setInserirNovaDuvida(dadosBody, contentType);
+        
+        console.log(resultDadosNovaDuvida);
         
         // Define o status da resposta e envia os dados de volta
         response.status(resultDadosNovaDuvida.status_code);
